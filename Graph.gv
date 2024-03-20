@@ -1,0 +1,13 @@
+graph {
+	graph [rankdir=BT]
+	"Nick Zoumakis" -- "George Zoumakis"
+	"George Zoumakis" -- "Nick Zoumakis
+(grandfather)"
+	"George Zoumakis" -- "Thalia Kikaki
+(grandmother)"
+	"Nick Zoumakis" -- "Valia Serdaki"
+	"Valia Serdaki" -- "Nick Serdakis
+(grandfather)"
+	"Valia Serdaki" -- "Katerina Giatromanolaki
+(grandmother)"
+}
