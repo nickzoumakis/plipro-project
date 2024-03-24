@@ -31,12 +31,12 @@ def main():
     #TODO: προσθήκη και άλλων παραμέτρων στο Person class για ένωση με αδέρφια
     #δοκιμαστική προσθήκη και ένωση Node αδερφιού 
     """sib = Person("CAT")
-    g.add_edge("6", sib.name)
-    g.add_subgraph([sib.name, "6"], rank = 'same')
+    graph.add_edge("2", sib.name)
+    graph.add_subgraph([sib.name, "2"], rank = 'same')
 
     sib = Person("DOG")
-    g.add_edge(sib.name, "6")
-    g.add_subgraph([sib.name, "6"], rank = 'same')"""
+    graph.add_edge(sib.name, "2")
+    graph.add_subgraph([sib.name, "2"], rank = 'same')"""
 
     graph.layout(prog='dot')    #χρήση της dot μεθόδου απεικόνισης
     """Έξοδος προγράμματος: graph.gv->πηγαίο αρχείο graphviz, graph.png->εικόνα γραφήματος"""
