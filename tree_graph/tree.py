@@ -26,10 +26,10 @@ def main():
     import pygraphviz as pgv
 
     # χειροκίνητη αρχικοποίηση ατόμων για την ώρα
-    mom = Person("Mother")
-    mom.gender = 'female'
     dad = Person("Father")
     dad.gender = 'male'
+    mom = Person("Mother")
+    mom.gender = 'female'
     son = Person("Son")
     son.gender = 'male'
     daughter = Person("Daughter")
@@ -38,6 +38,7 @@ def main():
     grandmother1.gender = 'female'
     grandfather1 = Person("Grandfather 1")
     grandfather1.gender = 'male'
+
     grandfather2 = Person("Grandfather 2")
     grandfather2.gender = 'male'
     grandmother2 = Person("Grandmother 2")
@@ -67,10 +68,8 @@ def main():
 
     grandfather2.spouse = grandmother2
     grandmother2.spouse = grandfather2
-    
     # πέρασμα όλων των προσώπων στη μεταβλητή people
     people = dad.all
-
 
     # χρήση της traverse_down για την εύρεση όλων των πιθανών διαδρομών αναδρομικά από κάθε άτομο στα παιδιά του   
     for person in people:
@@ -86,7 +85,7 @@ def main():
     graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
     graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
     graph.edge_attr.update(penwidth=5.0)
-    draw(graph, people, max_depth)
+    draw(graph, sorted(people, key=lambda person:person.generation), max_depth)
     graph.layout(prog="dot")
 
     # for debugging
@@ -175,6 +174,7 @@ def assign_generations_up(person, current_generation, is_sibling=False, is_spous
 
 """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
     τεθεί με βάση τις παραξενιές του graphviz"""
+# παραλλαγή με επιπλέον κόμβο για τους γονείς
 def draw(graph, people, max_generation):
     # p_nodes μετρητής σημείων ένωσης συζύγων/γονιών
     p_nodes = 0
@@ -185,6 +185,8 @@ def draw(graph, people, max_generation):
     node_fill = ["cadetblue1", "lightpink"]
     # 2 χρώματα για κάθε γάμο
     marriage_colors = ["red", "chartreuse"]
+    for person in people:
+        graph.add_node(person.id, label=f"{person.name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
     # για κάθε γενιά
     while current_gen <= max_generation:
         # completed links λίστες εξαιρούν αδέρφια και συζύγους για να μη γίνονται πολλαπλές ενώσεις
@@ -204,13 +206,11 @@ def draw(graph, people, max_generation):
                     name = person.name
                     spouse_id = person.spouse.id
                     spouse_name = person.spouse.name
-                    # δημιουργία κόμβων και ακμών
+                    # δημιουργία κόμβων και ακμών ένωσης γονιών
                     point = "point" + str(p_nodes)
                     link_left = "link" + str(id)
                     link_right = "link" + str(spouse_id)
                     # κόμβοι
-                    graph.add_node(id, label=f"{name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
-                    graph.add_node(spouse_id, label=f"{spouse_name}", style="filled", fillcolor=node_fill[0] if person.spouse.gender=="male" else node_fill[1])
                     graph.add_node(point, shape="point")
                     graph.add_node(link_left, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1],
                                    label="", height=0.05, color=marriage_colors[0] if is_red else marriage_colors[1])
@@ -221,8 +221,8 @@ def draw(graph, people, max_generation):
                     graph.add_edge(point, link_right, color=marriage_colors[0] if is_red else marriage_colors[1])
                     graph.add_subgraph([link_left, point, link_right], rank="same")
                     # σύνδεση link left & link right με κάθε σύζυγο
-                    graph.add_edge(id, link_left, color=marriage_colors[0] if is_red else marriage_colors[1])
                     graph.add_edge(spouse_id, link_right, color=marriage_colors[0] if is_red else marriage_colors[1])
+                    graph.add_edge(id, link_left, color=marriage_colors[0] if is_red else marriage_colors[1])
                     # προσθήκη στη λίστα εξαιρέσεων
                     completed_spouse_links.append(person)
                     # αύξηση μετρητή σημείων ένωσης
@@ -235,14 +235,13 @@ def draw(graph, people, max_generation):
                     # στοιχεία ατόμου που εξετάζεται
                     id = person.id
                     name = person.name
-                    graph.add_node(id, label=f"{name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
                     # εύρεση σημείου ένωσης γονιών του
                     parent_union = "point" + str(person.parents[0].own_union)
                     # αν 1 παιδί, ένωση αμέσως
                     if not person.siblings:
-                        # δημιουργία αόρατων nodes και σύνδεση
+                        # δημιουργία node σύνδεσης
                         sib = "sib" + str(sib_nodes)
-                        graph.add_node(sib, label="", shape="circle", style="filled", height=0.05, width=0.05, fillcolor="blue")
+                        graph.add_node(sib, label="", height=0.01, width=0.01)
                         graph.add_edge(parent_union, sib, color="blue")
                         graph.add_edge(sib, id, color="blue")
                         sib_nodes += 1
@@ -252,20 +251,18 @@ def draw(graph, people, max_generation):
                         inv_nodes = []
                         # λίστα με όλα τα αδέρφια συνολικά (+το εξεταζόμενο πρόσωπο)
                         all = [sibling.id for sibling in person.siblings]
-                        for sibling in person.siblings:
-                            graph.add_node(sibling.id, label=f"{sibling.name}", style="filled", fillcolor=node_fill[0] if sibling.gender=="male" else node_fill[1])
                         all.append(id)
                         total = len(all)
                         if total % 2 == 0:
                             even = True
                             total = total + 1
-                        # αόρατοι κόμβοι
+                        # κόμβοι σύνδεσης
                         for _ in range(total):
                             sib = "sib" + str(sib_nodes)
-                            graph.add_node(sib, label="", shape="circle", style="filled", height=0.05, width=0.05, fillcolor="blue")
+                            graph.add_node(sib, label="", height=0.01, width=0.01)
                             inv_nodes.append(sib)
                             sib_nodes += 1
-                        # σύνδεση αόρατων κόμβων
+                        # σύνδεση κόμβων μεταξύ τους
                         for i in range(total - 1):
                             graph.add_edge(inv_nodes[i], inv_nodes[i + 1], color="blue")
                         graph.add_subgraph(inv_nodes, rank="same")
@@ -286,7 +283,6 @@ def draw(graph, people, max_generation):
 
         # προχωράμε στην επόμενη γενιά
         current_gen += 1
-
     graph.layout(prog="dot")
     #graph.write("tree_new_default.dot")
     graph.draw("tree_new_default.png")
