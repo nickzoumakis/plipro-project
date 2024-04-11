@@ -1,12 +1,16 @@
-"""Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Αυτόματα αποδίδεται 
+from pathlib import Path
+import pygraphviz as pgv
+from json import load
+from random import shuffle
+
+"""Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Αποδίδεται 
     μοναδικός κωδικός μέσω του unique_id και το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
     προσβάσιμο από οποιοδήποτε instance μέσω του person.all"""
 class Person:
     all = []
-    unique_id = 0
-    def __init__(self, name):
+    def __init__(self, id, name):
+        self.id = id
         self.name = name
-        self.id = Person.unique_id
         self.gender = None
         self.children = []
         self.parents = []
@@ -15,7 +19,6 @@ class Person:
         self.generation = None
         self.own_union = None
         Person.all.append(self)
-        Person.unique_id += 1
 
 # globals
 depths = []
@@ -23,75 +26,103 @@ youngest_descendants = []
 
 def main():
 
-    import pygraphviz as pgv
-
-    # χειροκίνητη αρχικοποίηση ατόμων για την ώρα
-    dad = Person("Father")
-    dad.gender = 'male'
-    mom = Person("Mother")
-    mom.gender = 'female'
-    son = Person("Son")
-    son.gender = 'male'
-    daughter = Person("Daughter")
-    daughter.gender = 'female'
-    grandmother1 = Person("Grandmother 1")
-    grandmother1.gender = 'female'
-    grandfather1 = Person("Grandfather 1")
-    grandfather1.gender = 'male'
-
-    grandfather2 = Person("Grandfather 2")
-    grandfather2.gender = 'male'
-    grandmother2 = Person("Grandmother 2")
-    grandmother2.gender = 'female'
+    # path στο json με τα περιεχόμενα συγγένειας
+    path = Path.cwd().parent / 'data/data2.json'
     
     # δημιουργία σχέσεων συγγένειας
-    for parent in [dad, mom]:
-        for child in [son, daughter]:
-            child.parents.append(parent)
-            parent.children.append(child)
-    son.siblings.append(daughter)
-    daughter.siblings.append(son)
 
-    for grandparent in [grandfather1, grandmother1]:
-        dad.parents.append(grandparent)
-        grandparent.children.append(dad)
-    
-    for grandparent in [grandfather2, grandmother2]:
-        mom.parents.append(grandparent)
-        grandparent.children.append(mom)
-
-    dad.spouse = mom
-    mom.spouse = dad
-    grandmother1.spouse = grandfather1
-    grandfather1.spouse = grandmother1
-
-
-    grandfather2.spouse = grandmother2
-    grandmother2.spouse = grandfather2
     # πέρασμα όλων των προσώπων στη μεταβλητή people
-    people = dad.all
+    all_people = load_data(path)
 
     # χρήση της traverse_down για την εύρεση όλων των πιθανών διαδρομών αναδρομικά από κάθε άτομο στα παιδιά του   
-    for person in people:
+    for person in all_people:
         traverse_down(person, 0)
 
     # η μέγιστη τιμή του πίνακα depths δίνει το συνολικό ύψος του δέντρου (συνολικό πλήθος γενεών)
     max_depth = max(depths)
 
     # ανάθεση γενιάς σε κάθε άτομο - ορίζει το επίπεδο του δέντρου που θα τοποθετηθεί
-    assign_generations(people, max_depth)
+    assign_generations(all_people, max_depth)
 
     # αρχικοποιίηση του γραφήματος
     graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
     graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
     graph.edge_attr.update(penwidth=5.0)
-    draw(graph, sorted(people, key=lambda person:person.generation), max_depth)
+    #shuffle(all_people)
+    draw(graph, sorted(all_people, key=lambda person:person.generation), max_depth)
     graph.layout(prog="dot")
 
-    # for debugging
-    """for person in people:
-        print(f"{person.name} in generation {person.generation}")
-        print(f"{person.name} with own union no: {person.own_union}")"""
+
+""" Φορτώνει το αρχείο json με τις πληροφορίες συγγένειας και επιστρέφει
+    τη λίστα με τα ολοκληρωμένα person objects"""
+def load_data(json_path):
+    # load json
+    with open(json_path) as input_file:
+        data = load(input_file)
+    
+    # pass 1: Δημιουργία Person αντικειμένων
+    existing = []
+    current = None
+    for id in data:
+        # αν δεν υπάρχει το id , δημιουργείται νέο Person
+        if id not in existing:
+            current = Person(id, f"{data[id]['name']} {data[id]['surname']}")
+        else:
+            # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
+            all = current.all
+            current = get_person(id, all)
+        # δημιουργία γονιών
+        # TODO: αν υπάρχουν !
+        parent_ids = (data[id]['mother_id'], data[id]['father_id'])
+        parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}", 
+                        f"{data[id]['father_name']} {data[id]['father_surname']}")
+        parent_genders = ('female', 'male')
+        for parent_id, parent_name, parent_gender in zip(parent_ids, parent_names, parent_genders):
+            if parent_id not in existing:
+                parent = Person(parent_id, parent_name)
+            else:
+                parent = get_person(parent_id, current.all)
+            # σύνδεση γονιού με παιδί και αντίστροφα
+            parent.gender = parent_gender
+            parent.children.append(current)
+            current.parents.append(parent)
+        # ενημέρωση της existing με τα id όλων των αρχικοποιημένων Persons
+        existing = [person.id for person in current.all]
+
+    # pass 2: με γνωστούς τους γονείς και τα παιδιά κάθε ατόμου, απομένει η ανάθεση αδελφιών και συζύγων
+    # περνάμε όλα τα επικαιροποιημένα Person αντικείμενα στην all μέσω της τελευταίας τιμής που πήρε η current στο πρώτο pass
+    all = current.all
+    for person in all:
+        # αν δεν υπάρχουν γονείς, δεν έχει νόημα η αναζήτηση αδερφιών
+        if person.parents:
+            # για κάθε άλλο άτομο πέραν του εξεταζόμενου
+            for other_person in all:
+                if other_person != person:
+                    # αν έχουν κοινούς γονείς, είναι αδέρφια
+                    if are_siblings(person, other_person):
+                        person.siblings.append(other_person)
+            # σε κάθε περίπτωση, αν υπάρχουν γονείς, τους θέτουμε συζύγους
+            person.parents[0].spouse = person.parents[1]
+            person.parents[1].spouse = person.parents[0]
+
+    # επιστροφή της λίστας όλων των ατόμων στη main
+    return all
+
+
+""" Επιστρέφει το instance του ατόμου με το δεδομένο id """
+def get_person(id, all):
+    id_list = [person.id for person in all]
+    for i, person_id in enumerate(id_list):
+        if person_id == id:
+            return all[i]
+        
+
+""" Επιστρέφει True αν τα Person1 και 2 είναι αδέρφια """        
+def are_siblings(person1, person2):
+    for parent in person1.parents:
+        if parent not in person2.parents:
+            return False
+    return True
 
 
 """traverse_down: βρίσκει σε πόσα βήματα ξεκινώντας από το 0 μπορούμε να φτάσουμε στη νεότερη
@@ -114,11 +145,13 @@ def assign_generations(people, max_depth):
     global youngest_descendants
     
     # εύρεση πρώτα των νεότερων απογόνων
-    for person in people:
+    # αρκεί να ψάξουμε τις διαδρομές από τους γηραιότερους, αυτούς που δεν έχουν γονείς
+    oldest = [person for person in people if not person.parents]
+    for person in oldest:
         youngest(person, 0, max_depth)
 
     # ορίζουμε τη γενιά των νεότερων απογόνων ως τη μέγιστη
-    for person in set(youngest_descendants):     # χρήση set, το descendants έχει 2 φορές τον κάθε νεότερο απόγονο αφού προσεγγίζονται και από τους 2 γονείς τους
+    for person in set(youngest_descendants):     # χρήση set, το descendants έχει πολλές φορές τον κάθε νεότερο απόγονο αφού προσεγγίζονται και από τους 2 γονείς τους
         person.generation = max_depth
 
     # go up the parent ladder for each person, assigning max gen - 1 
@@ -130,21 +163,13 @@ def assign_generations(people, max_depth):
 """youngest: εύρεση των νεότερων απογόνων=>τα άτομα για τα οποία υπάρχει 
     μονοπάτι προς αυτά προς τα κάτω (μονοπάτι children) με τόσα βήματα 
     όσα και το σύνολο των γενεών""" 
-def youngest(person, count, generations, is_sibling=False, is_spouse=False):
-    # οι αδελφικές και συζυγικές σχέσεις είναι αμφίδρομες. Για να αποφευχθεί infinite recursion loop
-    # τα is_sibling και is_spouse τίθενται true αν εξερευνείται μονοπάτι συζύγου ή αδελφιού
+def youngest(person, count, generations):
     if count == generations:
         youngest_descendants.append(person)
     else:
-        # κινήσεις προς αδέρφια και συζύγους είναι πλάγιες, ο μετρητής δεν αυξάνεται για αυτές
-        if not is_sibling:
-            for sibling in person.siblings:
-                youngest(sibling, count, generations, is_sibling=True)
         for child in person.children:
             # κίνηση προς παιδί (προς τα κάτω), ο μετρητής αυξάνεται
             youngest(child, count + 1, generations)
-        if person.spouse and not is_spouse:
-            youngest(person.spouse, count, generations, is_spouse=True)
 
 
 """assign_generations_up: ανάθεση αριθμού γενιάς ξεκινώντας από τους νεότερους απογόνους που βρήκε η youngest 
@@ -152,28 +177,28 @@ def youngest(person, count, generations, is_sibling=False, is_spouse=False):
 def assign_generations_up(person, current_generation, is_sibling=False, is_spouse=False):
     if current_generation >= 0:
         person.generation = current_generation
-
-        # ίδια γενιά για κάθε αδερφό 
-        if not is_sibling:
-            for sibling in person.siblings:
-                sibling.generation = current_generation
-                # θέτω την is_sibling προαιρετική παράμετρο True εφόσον βρίσκομαι σε αδερφό
-                # διαφορετικά πέφτουμε σε infinite recursion loop (συνεχές μπρος πίσω μεταξύ αδερφών)
-                assign_generations_up(sibling, current_generation, is_sibling=True)
-
-        # ομοίως για συζύγους
-        if person.spouse and not is_spouse:
-            person.spouse.generation = current_generation
-            assign_generations_up(person.spouse, current_generation, is_spouse=True)
         
-        # περνάω στους γονείς μειώνοντας τη γενιά κατά 1
-        for parent in person.parents:
-            parent.generation = current_generation - 1
-            assign_generations_up(parent, current_generation - 1)
+    # ίδια γενιά για κάθε αδερφό 
+    if not is_sibling:
+        for sibling in person.siblings:
+            sibling.generation = current_generation
+            # θέτω την is_sibling προαιρετική παράμετρο True εφόσον βρίσκομαι σε αδερφό
+            # διαφορετικά πέφτουμε σε infinite recursion loop (συνεχές μπρος πίσω μεταξύ αδερφών)
+            assign_generations_up(sibling, current_generation, is_sibling=True)
+
+    # ομοίως για συζύγους
+    if person.spouse and not is_spouse:
+        person.spouse.generation = current_generation
+        assign_generations_up(person.spouse, current_generation, is_spouse=True)
+    
+    # περνάω στους γονείς μειώνοντας τη γενιά κατά 1
+    for parent in person.parents:
+        parent.generation = current_generation - 1
+        assign_generations_up(parent, current_generation - 1)
 
 
 """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
-    τεθεί με βάση τις παραξενιές του graphviz"""
+    τεθεί με βάση το dot layout του graphviz"""
 # παραλλαγή με επιπλέον κόμβο για τους γονείς
 def draw(graph, people, max_generation):
     # p_nodes μετρητής σημείων ένωσης συζύγων/γονιών

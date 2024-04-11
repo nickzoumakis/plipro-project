@@ -16,3 +16,5 @@
      ### Απεικόνιση μεγάλου δέντρου
 
      ![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/tree_new_large_6_4.png)
+
+- *update 11/4/2024* : **tree.py**-> Βελτίωση αναδρομής περιορίζοντας κάποιες περιττές κλήσεις, **νεο feature:** ανάκτηση γενεαλογικών δεδομένων από αρχείο json, βλ. φάκελο data.

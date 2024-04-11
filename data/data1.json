@@ -1,0 +1,46 @@
+{
+    "1": {
+        "name": "Lamprini",
+        "surname": "Kampaniari",
+        "date_of_birth": "",
+        "mother_name": "Vasiliki",
+        "mother_surname": "Kampaniari",
+        "mother_id": "2",
+        "father_name": "George",
+        "father_surname": "Kampaniaris",
+        "father_id": "3"
+    },
+    "2": {
+        "name": "Vasiliki",
+        "surname": "Kampaniari",
+        "date_of_birth": "",
+        "mother_name": "Lamprini",
+        "mother_surname": "Gelati",
+        "mother_id": "4",
+        "father_name": "Athan",
+        "father_surname": "Flesiopoulos",
+        "father_id": "5"
+    },
+    "3": {
+        "name": "George",
+        "surname": "Kampaniaris",
+        "date_of_birth": "",
+        "mother_name": "Maria",
+        "mother_surname": "Kampaniari",
+        "mother_id": "6",        
+        "father_name": "Anthony",
+        "father_surname": "Kampaniaris",
+        "father_id": "7"
+    },
+    "8": {
+        "name": "Maria",
+        "surname": "Kampaniari",
+        "date_of_birth": "",
+        "mother_name": "Vasiliki",
+        "mother_surname": "Kampaniari",
+        "mother_id": "2",
+        "father_name": "George",
+        "father_surname": "Kampaniaris",
+        "father_id": "3"
+    }
+}
