@@ -72,7 +72,6 @@ def load_data(json_path):
             all = current.all
             current = get_person(id, all)
         # δημιουργία γονιών
-        # TODO: αν υπάρχουν !
         parent_ids = (data[id]['mother_id'], data[id]['father_id'])
         parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}", 
                         f"{data[id]['father_name']} {data[id]['father_surname']}")
