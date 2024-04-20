@@ -1,11 +1,13 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
 
+from pathlib import Path
+import pygraphviz as pgv
+from json import load
 import customtkinter as ctk
 from tkinter import ttk
 import tkinter as tk
 from tkinter import simpledialog
 import json
-
 
 class MainApp:
 
@@ -102,7 +104,8 @@ class MainApp:
                             border_width=4, width=20, height=50)
         self.btn_add.place(relx=0.13, rely=0.8, anchor="ne")
 
-        self.btn_treeview = ctk.CTkButton(master=self.app, text="Εμφάνιση δεδομένων", corner_radius=32, #command=update_treeview,
+        # αλλαγή κουμπιού σε 'Καταχώρηση' -> περνάει όλα τα άτομα από το family tree dict στο json και καλεί το Graph 
+        self.btn_treeview = ctk.CTkButton(master=self.app, text="Καταχώρηση", corner_radius=32, #command=create_tree,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=4, width=20, height=50)
         self.btn_treeview.place (relx=0.30, rely=0.8, anchor="ne")
@@ -152,6 +155,7 @@ class MainApp:
         self.table.heading("#9", text="Father's ID", anchor=tk.CENTER)
     
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
+    # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία
     def add_person(self):
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
@@ -187,6 +191,10 @@ class MainApp:
         }
         print(self.family_data)
 
+        # Προσθέτει το νέο άτομο στο treeview-gui table
+        self.table.insert('', 'end', values=(
+            id, name, surname, dob, dod, mother_id, father_id, spouse_id, gender))
+        
     """clear_fields: Καθαρίζει όλα τα πεδία"""
     def clear_fields(self):
         for entry in [self.entry_name,

@@ -1,7 +1,6 @@
 from pathlib import Path
 import pygraphviz as pgv
 from json import load
-from random import shuffle
 
 """Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Αποδίδεται 
     μοναδικός κωδικός μέσω του unique_id και το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
@@ -29,6 +28,7 @@ class Graph:
         self.youngest_descendants = []
 
         # path στο json με τα περιεχόμενα συγγένειας
+        # TODO: πρέπει να παίρνει argument το path ή το όνομα του json, όχι hardcoded 
         self.path = Path.cwd().parent / 'data/data2.json'
         
         # δημιουργία σχέσεων συγγένειας
@@ -51,7 +51,6 @@ class Graph:
         graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
-        #shuffle(all_people)
         self.draw(graph, sorted(self.all_people, key=lambda person:person.generation), self.max_depth)
         graph.layout(prog="dot")
     
