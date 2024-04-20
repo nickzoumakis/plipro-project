@@ -105,6 +105,7 @@ class MainApp:
         self.btn_add.place(relx=0.13, rely=0.8, anchor="ne")
 
         # αλλαγή κουμπιού σε 'Καταχώρηση' -> περνάει όλα τα άτομα από το family tree dict στο json και καλεί το Graph 
+        # TODO: υλοποίηση της create_tree με κλήση των Person και Graph από το tree_oop.py
         self.btn_treeview = ctk.CTkButton(master=self.app, text="Καταχώρηση", corner_radius=32, #command=create_tree,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=4, width=20, height=50)
