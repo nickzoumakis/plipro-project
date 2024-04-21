@@ -2,8 +2,7 @@ from pathlib import Path
 import pygraphviz as pgv
 from json import load
 
-"""Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Αποδίδεται 
-    μοναδικός κωδικός μέσω του unique_id και το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
+"""Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
     προσβάσιμο από οποιοδήποτε instance μέσω του person.all"""
 class Person:
     all = []
@@ -23,18 +22,20 @@ class Person:
 """Class Graph: Σχεδιάζει το γενεαλογικό δέντρο"""
 # TODO: να διαχωριστούν κάποιες δράσεις από την init για περισσότερο έλεγχο από το χρήστη κατά την αρχικοποίηση
 class Graph:
-    def __init__(self):
+    def __init__(self, family_data):
         self.depths = []
         self.youngest_descendants = []
 
         # path στο json με τα περιεχόμενα συγγένειας
-        # TODO: πρέπει να παίρνει argument το path ή το όνομα του json, όχι hardcoded 
-        self.path = Path.cwd().parent / 'data/data2.json'
+        # TODO: πρέπει να παίρνει argument το path ή το όνομα του json, όχι hardcoded
+        # TODO: για την ώρα και για ευκολότερη διεπαφή με το gui module, παίρνει μόνο το dict family_data και φτιάχνει 1 μόνο δέντρο τη φορά
+        # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
+        #self.path = Path.cwd().parent / 'data/data2.json'
         
         # δημιουργία σχέσεων συγγένειας
 
         # πέρασμα όλων των προσώπων στη μεταβλητή people
-        self.all_people = self.load_data(self.path)
+        self.all_people = self.load_data(family_data)
 
         # χρήση της traverse_down για την εύρεση όλων των πιθανών διαδρομών αναδρομικά από κάθε άτομο στα παιδιά του   
         for person in self.all_people:
@@ -57,10 +58,13 @@ class Graph:
 
     """ Φορτώνει το αρχείο json με τις πληροφορίες συγγένειας και επιστρέφει
     τη λίστα με τα ολοκληρωμένα person objects"""
-    def load_data(self, json_path):
-        # load json
+    # TODO: προσωρινά απενεργοποιημένο το load json , δουλεύει με dict κατευθείαν απο το gui_oop
+    def load_data(self, family_data):
+        """# load json
         with open(json_path) as input_file:
-            data = load(input_file)
+            data = load(input_file)"""
+        
+        data = family_data
         
         # pass 1: Δημιουργία Person αντικειμένων
         existing = []
@@ -69,6 +73,7 @@ class Graph:
             # αν δεν υπάρχει το id , δημιουργείται νέο Person
             if id not in existing:
                 current = Person(id, f"{data[id]['name']} {data[id]['surname']}")
+                current.gender = data[id]['gender']
             else:
                 # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
                 all = current.all

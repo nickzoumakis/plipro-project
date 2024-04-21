@@ -1,5 +1,5 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
-
+from tree_oop import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
 from json import load
@@ -106,7 +106,7 @@ class MainApp:
 
         # αλλαγή κουμπιού σε 'Καταχώρηση' -> περνάει όλα τα άτομα από το family tree dict στο json και καλεί το Graph 
         # TODO: υλοποίηση της create_tree με κλήση των Person και Graph από το tree_oop.py
-        self.btn_treeview = ctk.CTkButton(master=self.app, text="Καταχώρηση", corner_radius=32, #command=create_tree,
+        self.btn_treeview = ctk.CTkButton(master=self.app, text="Δημιουργία Δέντρου", corner_radius=32, command=self.create_tree,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=4, width=20, height=50)
         self.btn_treeview.place (relx=0.30, rely=0.8, anchor="ne")
@@ -140,14 +140,15 @@ class MainApp:
         self.style = ttk.Style()
         self.style.configure("Treeview.Heading", font=("Arial", 12))
 
+        # TODO: το κείμενο στο treeview να στοιχιστεί στο κέντρο κάθε στήλης
         # Change font size of the content
         self.style.configure("Treeview", font=('Arial', 10), anchor=tk.CENTER)
 
         self.table.heading("#1", text='Unique_id',  anchor=tk.CENTER)
-        self.table.column("#1", width=140)
+        #self.table.column("#1", width=140)
         self.table.heading("#2", text='First name', anchor=tk.CENTER)
         self.table.heading("#3", text='Surname', anchor=tk.CENTER)
-        self.table.column("#3", width=190)
+        #self.table.column("#3", width=190)
         self.table.heading("#4", text="Mother's Name", anchor=tk.CENTER)
         self.table.heading("#5", text="Mother's Surname", anchor=tk.CENTER)
         self.table.heading("#6", text="Mother's ID", anchor=tk.CENTER)
@@ -155,6 +156,7 @@ class MainApp:
         self.table.heading("#8", text="Father's Surname", anchor=tk.CENTER)
         self.table.heading("#9", text="Father's ID", anchor=tk.CENTER)
     
+
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία
     def add_person(self):
@@ -190,12 +192,25 @@ class MainApp:
             "father_id": father_id,
             "spouse_id": spouse_id
         }
-        print(self.family_data)
+        #print(self.family_data)
 
         # Προσθέτει το νέο άτομο στο treeview-gui table
         self.table.insert('', 'end', values=(
-            id, name, surname, dob, dod, mother_id, father_id, spouse_id, gender))
+            id, 
+            name, 
+            surname, 
+            mother_name, 
+            mother_surname, 
+            mother_id,
+            father_name,
+            father_surname, 
+            father_id)
+            ), 
         
+        # Καθάρισμα των πεδίων για το επόμενο άτομο
+        self.clear_fields()
+        
+
     """clear_fields: Καθαρίζει όλα τα πεδία"""
     def clear_fields(self):
         for entry in [self.entry_name,
@@ -217,17 +232,23 @@ class MainApp:
             if checkbox.get() == 1:
                 checkbox.toggle()
 
-    """Συνάρτηση gui (graphic user interface): Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
-    def gui(self):
+    """run: Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
+    def run(self):
         self.table.pack(fill='both', expand=True)
         self.app.mainloop()
+
+
+    """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
+    def create_tree(self):
+        graph = Graph(self.family_data)
+        graph.show()
 
 
 """Συνάρτηση main"""
 def main():
     # υλοποίηση του παραθύρου
     family_tree = MainApp()
-    family_tree.gui()
+    family_tree.run()
 
 
 """
