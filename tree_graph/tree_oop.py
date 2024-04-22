@@ -313,8 +313,8 @@ class Graph:
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
         graph.layout(prog="dot")
-        #graph.write("tree_new_default.dot")
-        graph.draw("tree_new_default.png")
+        #graph.write("tree.dot")
+        graph.draw("tree.png")
 
 
 def main():

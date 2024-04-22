@@ -251,6 +251,16 @@ class MainApp:
         # TODO: Ονοματοδοσία αρχείου και θέση στο path
         graph = Graph(self.family_data)
         graph.show()
+        # άνοιγμα εικόνας σε νέο παράθυρο tkinter
+        # TODO: να γίνεται resize η εικόνα στις διαστάσεις του παραθύρου, ίσως χρήση PIL αντί για photoimage εδώ?
+        # όταν φτιάχνω νέο παράθυρο, ποτέ δεν το ορίζω ως καινούριο tk.Τk() αντικείμενο αλλά σαν TopLevel του master window
+        tree_img = tk.Toplevel()
+        tree_img.title("Γενεαλογικό Δέντρο")
+        tree_img.geometry("1280x720")
+        img = tk.PhotoImage(file="tree.png")
+        img_label = tk.Label(tree_img, image=img)
+        img_label.pack()
+        tree_img.mainloop()
 
 
 """Συνάρτηση main"""
