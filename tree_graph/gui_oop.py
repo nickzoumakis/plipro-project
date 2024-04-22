@@ -131,30 +131,38 @@ class MainApp:
                             border_width=2, width=20, height=50)
         self.btn_delete.place(relx=0.95, rely=0.8, anchor="ne")
 
-
-
         # treeview
-        self.table = ttk.Treeview(self.middle, columns=("Unique ID", "Name", "Surname", "Mother_Name", "Mother_Surname", "Mother ID", "Father_Name", "Father_Surname", "Father ID"),
-                            show='headings')
+        col_titles = (
+            "Κωδικός", 
+            "Όνομα", 
+            "Επώνυμο", 
+            "Όνομα Μητέρας", 
+            "Επώνυμο Μητέρας", 
+            "Κωδικός Μητέρας", 
+            "Όνομα Πατέρα", 
+            "Επώνυμο Πατέρα", 
+            "Κωδικός Πατέρα")
+        
+        self.table = ttk.Treeview(self.middle, columns=col_titles, show='headings')
         # Change font size of the headings
         self.style = ttk.Style()
         self.style.configure("Treeview.Heading", font=("Arial", 12))
-
-        # TODO: το κείμενο στο treeview να στοιχιστεί στο κέντρο κάθε στήλης
         # Change font size of the content
-        self.style.configure("Treeview", font=('Arial', 10), anchor=tk.CENTER)
+        #self.style.configure("Treeview", font=('Arial', 10), anchor=tk.CENTER)
 
-        self.table.heading("#1", text='Unique_id',  anchor=tk.CENTER)
-        #self.table.column("#1", width=140)
-        self.table.heading("#2", text='First name', anchor=tk.CENTER)
-        self.table.heading("#3", text='Surname', anchor=tk.CENTER)
-        #self.table.column("#3", width=190)
-        self.table.heading("#4", text="Mother's Name", anchor=tk.CENTER)
-        self.table.heading("#5", text="Mother's Surname", anchor=tk.CENTER)
-        self.table.heading("#6", text="Mother's ID", anchor=tk.CENTER)
-        self.table.heading("#7", text="Father's Name", anchor=tk.CENTER)
-        self.table.heading("#8", text="Father's Surname", anchor=tk.CENTER)
-        self.table.heading("#9", text="Father's ID", anchor=tk.CENTER)
+        # Δημιουργία στηλών στο tree view με κεντραρισμένο το κείμενο των entries
+        for title in col_titles:
+            self.table.heading(title, text=title, anchor='center')
+            self.table.column(title, anchor='center')
+        # add event: όταν ο χρήστης κάνει κλικ σε κάποιο άτομο στο treeview, τα στοιχεία του να εμφανίζονται στις φόρμες του παραθύρου        
+        # η lambda εδώ είναι απαραίτητη, το bind επιστρέφει event από μόνο του ως argument, τη χρησιμοποιούμε για να το απορροφήσουμε και να καλέσουμε τη συνάρτηση που ενδιαφέρει πραγματικά(show items) 
+        self.table.bind('<<TreeviewSelect>>', lambda _event:self.show_items())
+    
+    # TODO: να εμφανίζονται τα στοιχεία αυτά στις φόρμες του παραθύρου
+    # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση, να ενημερώνεται το family_data dict
+    def show_items(self):
+        for i in self.table.selection():
+            print(self.table.item(i)['values'])
     
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
@@ -162,7 +170,6 @@ class MainApp:
     def add_person(self):
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
-
         # για κάθε στοιχείο που εισήγαγε ο χρήστης
         name = self.entry_name.get()
         surname = self.entry_surname.get()
@@ -192,6 +199,7 @@ class MainApp:
             "father_id": father_id,
             "spouse_id": spouse_id
         }
+        # για debugging
         #print(self.family_data)
 
         # Προσθέτει το νέο άτομο στο treeview-gui table
@@ -205,7 +213,7 @@ class MainApp:
             father_name,
             father_surname, 
             father_id)
-            ), 
+            ) 
         
         # Καθάρισμα των πεδίων για το επόμενο άτομο
         self.clear_fields()
@@ -240,6 +248,7 @@ class MainApp:
 
     """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
+        # TODO: Ονοματοδοσία αρχείου και θέση στο path
         graph = Graph(self.family_data)
         graph.show()
 
