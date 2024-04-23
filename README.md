@@ -23,4 +23,4 @@
 
     ### Απεικόνιση μετά από είσοδο του χρήστη
 
-    ![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/gentree_gui.png)
+    ![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/gentree_new.png)
