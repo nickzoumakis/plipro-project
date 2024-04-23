@@ -245,7 +245,6 @@ class MainApp:
     """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
         # TODO: Ονοματοδοσία αρχείου και θέση στο path
-        # TODO: Να γίνεται reset το family_tree dict σε κάθε κλήση αλλιώς επανασχεδιάζονται οι ακμές πάνω στις προηγούμενες!
         graph = Graph(self.family_data)
         graph.show()
         self.load_image()

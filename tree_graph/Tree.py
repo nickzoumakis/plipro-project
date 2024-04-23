@@ -48,6 +48,8 @@ class Graph:
         # ανάθεση γενιάς σε κάθε άτομο - ορίζει το επίπεδο του δέντρου που θα τοποθετηθεί
         self.assign_generations(self.all_people, self.max_depth)
 
+
+    """Σχεδιάζει το δέντρο μέσω του graphviz"""
     def show(self):
         # αρχικοποιίηση του γραφήματος
         graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
@@ -55,9 +57,11 @@ class Graph:
         graph.edge_attr.update(penwidth=5.0)
         self.draw(graph, sorted(self.all_people, key=lambda person:person.generation), self.max_depth)
         graph.layout(prog="dot")
-    
+        # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
+        self.all_people.clear()
 
-    """ Φορτώνει το αρχείο json με τις πληροφορίες συγγένειας και επιστρέφει
+
+    """Φορτώνει το αρχείο json με τις πληροφορίες συγγένειας και επιστρέφει
     τη λίστα με τα ολοκληρωμένα person objects"""
     # TODO: προσωρινά απενεργοποιημένο το load json , δουλεύει με dict κατευθείαν απο το gui_oop
     def load_data(self, family_data):
@@ -321,6 +325,7 @@ class Graph:
 def main():
     g = Graph()
     g.show()
+    
     
 if __name__ == "__main__":
     main()
