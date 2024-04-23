@@ -47,6 +47,34 @@ class Graph:
 
         # ανάθεση γενιάς σε κάθε άτομο - ορίζει το επίπεδο του δέντρου που θα τοποθετηθεί
         self.assign_generations(self.all_people, self.max_depth)
+        # ταξινόμηση ανα γενιά και ανα συζύγους, η μέθοδος show παίρνει το sorted_all και σχεδιάζει το δέντρο
+        self.sorted_all = self.parse(self.all_people, self.max_depth)
+
+
+    """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
+    -> διευκολύνει τη σχεδίαση από την draw
+    -> αποφεύγονται κακές διασταυρώσεις ακμών (χρειάζεται περισσότερες δοκιμές)"""
+    def parse(self, all, generations):
+        sorted_persons = []
+        exclusions = []
+        # για κάθε γενιά
+        for i in range(generations + 1):
+            # για κάθε άτομο στη λίστα
+            for person in all:
+                # αν η γενιά του ανήκει στην εξεταζόμενη
+                if person.generation == i and person not in exclusions:
+                    # αν είναι άντρας και παντρεμένος τον προσθέτουμε στη λίστα μαζί με τη σύζυγό του δίπλα(σειρά: husband-wife)
+                    if person.spouse:
+                        if person.gender == 'male':
+                            sorted_persons.append(person)
+                            sorted_persons.append(person.spouse)
+                            # εξαιρούμε η σύζυγο από μελλοντική αναζήτηση
+                            exclusions.append(person.spouse)
+                    # διαφορετικά *(ανύπαντρος άντρας ή γυναίκα), προσθέτουμε κανονικά στη λίστα
+                    else:
+                        sorted_persons.append(person)
+        # επιστροφή της ταξινομημένης λίστας ατόμων
+        return sorted_persons
 
 
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
@@ -55,7 +83,7 @@ class Graph:
         graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
-        self.draw(graph, sorted(self.all_people, key=lambda person:person.generation), self.max_depth)
+        self.draw(graph, self.sorted_all, self.max_depth)
         graph.layout(prog="dot")
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
         self.all_people.clear()
