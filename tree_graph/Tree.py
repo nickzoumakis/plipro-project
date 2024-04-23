@@ -2,6 +2,7 @@ from pathlib import Path
 import pygraphviz as pgv
 from json import load
 
+
 """Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
     προσβάσιμο από οποιοδήποτε instance μέσω του person.all"""
 class Person:

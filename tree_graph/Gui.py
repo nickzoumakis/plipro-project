@@ -1,7 +1,8 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
-from tree_oop import Person, Graph
+from Tree import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
+from PIL import Image
 from json import load
 import customtkinter as ctk
 from tkinter import ttk
@@ -9,8 +10,8 @@ import tkinter as tk
 from tkinter import simpledialog
 import json
 
-class MainApp:
 
+class MainApp:
     def __init__(self):
         # αρχικοποίηση κενού dict που θα φιλοξενήσει όλα τα στοιχεία των ατόμων που προσθέτει ο χρήστης
         self.family_data = {}
@@ -18,7 +19,7 @@ class MainApp:
         # Στοιχεία και γεωμετρία παραθύρου
         self.app = ctk.CTk()
         self.app.geometry("1500x900")
-        self.label_title= ctk.CTkLabel(master=self.app, text="Genealogy Tree", font=("Arial", 25), text_color="black")
+        self.label_title= ctk.CTkLabel(master=self.app, text="Γενεαλογικό Δέντρο", font=("Arial", 25), text_color="black")
         self.label_title.place(relx=0.5, rely=0.05, anchor="center")
         ctk.set_appearance_mode("light")
 
@@ -28,62 +29,62 @@ class MainApp:
         self.checkbox_female_var = tk.StringVar()
 
         #LABELS FOR INPUT & TEXT ENTRY
-        self.label_name= ctk.CTkLabel(master=self.app, text=" Name :", font=("Arial", 18), text_color="black")
+        self.label_name= ctk.CTkLabel(master=self.app, text="Όνομα: ", font=("Arial", 18), text_color="black")
         self.label_name.place(relx=0.02, rely=0.1, anchor="nw")
         self.entry_name= ctk.CTkEntry(master=self.app, font=("Arial", 18), text_color="black", fg_color="white",width=270)
         self.entry_name.place(relx=0.065, rely=0.1, anchor="nw")
 
-        self.label_surname= ctk.CTkLabel(master=self.app, text=" Surname :", font=("Arial", 18), text_color="black")
+        self.label_surname= ctk.CTkLabel(master=self.app, text="Επώνυμο: ", font=("Arial", 18), text_color="black")
         self.label_surname.place(relx=0.25, rely=0.1, anchor="nw")
         self.entry_surname= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=270)
         self.entry_surname.place(relx=0.32, rely=0.1, anchor="nw")
 
-        self.label_date= ctk.CTkLabel(master=self.app, text=" Date of Birth :", font=("Arial", 18), text_color="black")
+        self.label_date= ctk.CTkLabel(master=self.app, text="Ημερομηνία γέννησης: ", font=("Arial", 18), text_color="black")
         self.label_date.place(relx=0.52, rely=0.1, anchor="nw")
         self.entry_date= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
         self.entry_date.place(relx=0.61, rely=0.1, anchor="nw")
 
-        self.label_id= ctk.CTkLabel(master=self.app, text=" ID :", font=("Arial", 18), text_color="black")
+        self.label_id= ctk.CTkLabel(master=self.app, text="ID: ", font=("Arial", 18), text_color="black")
         self.label_id.place(relx=0.02, rely=0.15, anchor="nw")
         self.entry_id= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=230)
         self.entry_id.place(relx=0.053, rely=0.15, anchor="nw")
 
-        self.label_mother_name= ctk.CTkLabel(master=self.app, text=" Mother's name :", font=("Arial", 18), text_color="black")
-        self.label_mother_name.place(relx=0.02, rely=0.20, anchor="nw")
-        self.entry_mother_name= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=206)
-        self.entry_mother_name.place(relx=0.11, rely=0.20, anchor="nw")
-
-        self.label_mother_surname= ctk.CTkLabel(master=self.app, text=" Mother's surname :", font=("Arial", 18), text_color="black")
-        self.label_mother_surname.place(relx=0.25, rely=0.20, anchor="nw")
-        self.entry_mother_surname= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
-        self.entry_mother_surname.place(relx=0.36, rely=0.20, anchor="nw")
-
-        self.label_mother_id= ctk.CTkLabel(master=self.app, text=" Mother's (ID) :", font=("Arial", 18), text_color="black")
-        self.label_mother_id.place(relx=0.52, rely=0.20, anchor="nw")
-        self.entry_mother_id= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
-        self.entry_mother_id.place(relx=0.6, rely=0.20, anchor="nw")
-
-        self.label_death= ctk.CTkLabel(master=self.app, text=" Date of Death :", font=("Arial", 18), text_color="black")
+        self.label_death= ctk.CTkLabel(master=self.app, text="Ημερομηνία θανάτου: ", font=("Arial", 18), text_color="black")
         self.label_death.place(relx=0.52, rely=0.15, anchor="nw")
         self.entry_death= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
         self.entry_death.place(relx=0.61, rely=0.15, anchor="nw")
 
-        self.label_father_name= ctk.CTkLabel(master=self.app, text=" Father's name :", font=("Arial", 18), text_color="black")
+        self.label_mother_name= ctk.CTkLabel(master=self.app, text="Όνομα Μητέρας: ", font=("Arial", 18), text_color="black")
+        self.label_mother_name.place(relx=0.02, rely=0.20, anchor="nw")
+        self.entry_mother_name= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=206)
+        self.entry_mother_name.place(relx=0.11, rely=0.20, anchor="nw")
+
+        self.label_mother_surname= ctk.CTkLabel(master=self.app, text="Επώνυμο Μητέρας: ", font=("Arial", 18), text_color="black")
+        self.label_mother_surname.place(relx=0.25, rely=0.20, anchor="nw")
+        self.entry_mother_surname= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
+        self.entry_mother_surname.place(relx=0.36, rely=0.20, anchor="nw")
+
+        self.label_mother_id= ctk.CTkLabel(master=self.app, text="ID Μητέρας: ", font=("Arial", 18), text_color="black")
+        self.label_mother_id.place(relx=0.52, rely=0.20, anchor="nw")
+        self.entry_mother_id= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
+        self.entry_mother_id.place(relx=0.6, rely=0.20, anchor="nw")
+
+        self.label_father_name= ctk.CTkLabel(master=self.app, text="Όνομα Πατέρα: ", font=("Arial", 18), text_color="black")
         self.label_father_name.place(relx=0.02, rely=0.25, anchor="nw")
         self.entry_father_name= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=206)
         self.entry_father_name.place(relx=0.11, rely=0.25, anchor="nw")
 
-        self.label_father_surname= ctk.CTkLabel(master=self.app, text=" Father's surname :", font=("Arial", 18), text_color="black")
+        self.label_father_surname= ctk.CTkLabel(master=self.app, text="Επώνυμο Πατέρα: ", font=("Arial", 18), text_color="black")
         self.label_father_surname.place(relx=0.25, rely=0.25, anchor="nw")
         self.entry_father_surname= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
         self.entry_father_surname.place(relx=0.36, rely=0.25, anchor="nw")
 
-        self.label_father_id= ctk.CTkLabel(master=self.app, text=" Father's (ID) :", font=("Arial", 18), text_color="black")
+        self.label_father_id= ctk.CTkLabel(master=self.app, text="ID Πατέρα: ", font=("Arial", 18), text_color="black")
         self.label_father_id.place(relx=0.52, rely=0.25, anchor="nw")
         self.entry_father_id= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
         self.entry_father_id.place(relx=0.6, rely=0.25, anchor="nw")
 
-        self.label_spouse= ctk.CTkLabel(master=self.app, text=" Spouse (ID) :", font=("Arial", 18), text_color="black")
+        self.label_spouse= ctk.CTkLabel(master=self.app, text="ID Συζύγου: ", font=("Arial", 18), text_color="black")
         self.label_spouse.place(relx=0.02, rely=0.30, anchor="nw")
         self.entry_spouse= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
         self.entry_spouse.place(relx=0.11, rely=0.30, anchor="nw")
@@ -92,9 +93,9 @@ class MainApp:
 
         # CHECKBOXES
         # TODO: Προσθήκη command ώστε όταν επιλέγεται το ένα κουτί, να απενεργοποιείται το άλλο
-        self.checkbox_male = ctk.CTkCheckBox(master=self.app, text="Male", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey")
+        self.checkbox_male = ctk.CTkCheckBox(master=self.app, text="Άντρας", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey")
         self.checkbox_male.place(relx=0.25, rely=0.15, anchor="nw")
-        self.checkbox_female = ctk.CTkCheckBox(master=self.app, text="Female", font=("Arial", 12), hover=True, fg_color="grey", bg_color="light grey")
+        self.checkbox_female = ctk.CTkCheckBox(master=self.app, text="Γυναίκα", font=("Arial", 12), hover=True, fg_color="grey", bg_color="light grey")
         self.checkbox_female.place(relx=0.33, rely=0.15, anchor="nw")
 
 
@@ -240,27 +241,39 @@ class MainApp:
             if checkbox.get() == 1:
                 checkbox.toggle()
 
-    """run: Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
-    def run(self):
-        self.table.pack(fill='both', expand=True)
-        self.app.mainloop()
-
 
     """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
         # TODO: Ονοματοδοσία αρχείου και θέση στο path
+        # TODO: Να γίνεται reset το family_tree dict σε κάθε κλήση αλλιώς επανασχεδιάζονται οι ακμές πάνω στις προηγούμενες!
         graph = Graph(self.family_data)
         graph.show()
-        # άνοιγμα εικόνας σε νέο παράθυρο tkinter
-        # TODO: να γίνεται resize η εικόνα στις διαστάσεις του παραθύρου, ίσως χρήση PIL αντί για photoimage εδώ?
-        # όταν φτιάχνω νέο παράθυρο, ποτέ δεν το ορίζω ως καινούριο tk.Τk() αντικείμενο αλλά σαν TopLevel του master window
-        tree_img = tk.Toplevel()
-        tree_img.title("Γενεαλογικό Δέντρο")
-        tree_img.geometry("1280x720")
-        img = tk.PhotoImage(file="tree.png")
-        img_label = tk.Label(tree_img, image=img)
-        img_label.pack()
-        tree_img.mainloop()
+        self.load_image()
+
+
+    """ load_image: άνοιγμα εικόνας δέντρου σε νέο παράθυρο tkinter """
+    def load_image(self):
+            # άνοιγμα εικόνας με PIL
+            img = Image.open("tree.png")
+            # ακριβές μέγεθος εικόνας για τις διαστάσεις του παραθύρου
+            dimensions = f'{img.width}x{img.height}'
+            # άνοιγμα εικόνας σε νέο παράθυρο tkinter
+            # όταν φτιάχνω νέο παράθυρο, ποτέ δεν το ορίζω ως καινούριο tk.Τk() αντικείμενο αλλά σαν TopLevel του master window
+            tree_img = tk.Toplevel()
+            tree_img.title("Γενεαλογικό Δέντρο")
+            tree_img.geometry(dimensions)
+            # TODO: να βρίσκει μόνο του το path ανάλογα με το όνομα της εικόνας
+            # TODO: ονοματοδοσία αρχείων!
+            img = tk.PhotoImage(file="tree.png")
+            img_label = tk.Label(tree_img, image=img)
+            img_label.pack()
+            tree_img.mainloop()
+
+
+    """run: Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
+    def run(self):
+        self.table.pack(fill='both', expand=True)
+        self.app.mainloop()
 
 
 """Συνάρτηση main"""
