@@ -249,8 +249,7 @@ class MainApp:
         
         # Ξετσεκάρει τα checkboxes
         for checkbox in [self.checkbox_male, self.checkbox_female]:
-            if checkbox.get() == 1:
-                checkbox.toggle()
+            checkbox.deselect()
 
 
     """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
