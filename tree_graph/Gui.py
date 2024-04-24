@@ -25,10 +25,8 @@ class MainApp:
 
         self.middle = tk.Frame(self.app, pady=10.5, highlightthickness=2, height=30, width=20)
         self.middle.pack(side = ctk.LEFT)
-        self.checkbox_male_var = tk.StringVar()
-        self.checkbox_female_var = tk.StringVar()
 
-        #LABELS FOR INPUT & TEXT ENTRY
+        # Πεδία εισαγωγής
         self.label_name= ctk.CTkLabel(master=self.app, text="Όνομα: ", font=("Arial", 18), text_color="black")
         self.label_name.place(relx=0.02, rely=0.1, anchor="nw")
         self.entry_name= ctk.CTkEntry(master=self.app, font=("Arial", 18), text_color="black", fg_color="white",width=270)
@@ -91,11 +89,10 @@ class MainApp:
 
 
 
-        # CHECKBOXES
-        # TODO: Προσθήκη command ώστε όταν επιλέγεται το ένα κουτί, να απενεργοποιείται το άλλο
-        self.checkbox_male = ctk.CTkCheckBox(master=self.app, text="Άντρας", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey")
+        # CHECKBOXES για φύλο
+        self.checkbox_male = ctk.CTkCheckBox(master=self.app, text="Άντρας", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey", command=lambda:self.uncheck_other("male"))
         self.checkbox_male.place(relx=0.25, rely=0.15, anchor="nw")
-        self.checkbox_female = ctk.CTkCheckBox(master=self.app, text="Γυναίκα", font=("Arial", 12), hover=True, fg_color="grey", bg_color="light grey")
+        self.checkbox_female = ctk.CTkCheckBox(master=self.app, text="Γυναίκα", font=("Arial", 12), hover=True, fg_color="grey", bg_color="light grey", command=lambda:self.uncheck_other("female"))
         self.checkbox_female.place(relx=0.33, rely=0.15, anchor="nw")
 
 
@@ -105,8 +102,7 @@ class MainApp:
                             border_width=4, width=20, height=50)
         self.btn_add.place(relx=0.13, rely=0.8, anchor="ne")
 
-        # αλλαγή κουμπιού σε 'Καταχώρηση' -> περνάει όλα τα άτομα από το family tree dict στο json και καλεί το Graph 
-        # TODO: υλοποίηση της create_tree με κλήση των Person και Graph από το tree_oop.py
+        # αλλαγή κουμπιού σε 'Δημιουργία Δέντρου' -> περνάει όλα τα άτομα από το family tree dict στο Graph 
         self.btn_treeview = ctk.CTkButton(master=self.app, text="Δημιουργία Δέντρου", corner_radius=32, command=self.create_tree,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=4, width=20, height=50)
@@ -159,15 +155,28 @@ class MainApp:
         # η lambda εδώ είναι απαραίτητη, το bind επιστρέφει event από μόνο του ως argument, τη χρησιμοποιούμε για να το απορροφήσουμε και να καλέσουμε τη συνάρτηση που ενδιαφέρει πραγματικά(show items) 
         self.table.bind('<<TreeviewSelect>>', lambda _event:self.show_items())
     
-    # TODO: να εμφανίζονται τα στοιχεία αυτά στις φόρμες του παραθύρου
-    # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση, να ενημερώνεται το family_data dict
+
+    """απενεργοποιεί το ένα checkbox φύλου εφόσον επιλέγεται το άλλο"""
+    def uncheck_other(self, enabled):
+        if enabled == "male":
+            if self.checkbox_female.get() == 1:
+                self.checkbox_female.deselect()
+            self.checkbox_male.select()
+        elif enabled == "female":
+            if self.checkbox_male.get() == 1:
+                self.checkbox_male.deselect()
+            self.checkbox_female.select()
+
+
+    """για την ώρα η show_items απλά εμφανίζει στο terminal τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
+    # TODO: να εμφανίζονται τα στοιχεία αυτά στις φόρμες του παραθύρου όταν ο χρήστης κάνει κλικ
+    # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
         for i in self.table.selection():
             print(self.table.item(i)['values'])
     
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
-    # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία
     def add_person(self):
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
@@ -185,6 +194,7 @@ class MainApp:
         father_id = self.entry_father_id.get()
         spouse_id = self.entry_spouse.get()
 
+        # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph
         # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
             "name": name,
@@ -200,6 +210,7 @@ class MainApp:
             "father_id": father_id,
             "spouse_id": spouse_id
         }
+
         # για debugging
         #print(self.family_data)
 
