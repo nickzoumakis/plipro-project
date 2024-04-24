@@ -23,19 +23,19 @@ class Person:
 """Class Graph: Σχεδιάζει το γενεαλογικό δέντρο"""
 # TODO: να διαχωριστούν κάποιες δράσεις από την init για περισσότερο έλεγχο από το χρήστη κατά την αρχικοποίηση
 class Graph:
-    def __init__(self, family_data):
+    """init παίρνει το family_data, ανάλογα με την παράμετρο is_path που δόθηκε από το MainApp αναγνωρίζει 
+    εάν πρόκειται για αρχείο json υπάρχοντος ή dict νέου γενεαλογικού δέντρου"""
+    def __init__(self, family_data, is_path=False):
+        # depths και youngest_descendants είναι global και χρησιμοποιούνται για να αποθηκεύουν τις τιμές των αναδρομικών συναρτήσεων διατηρώντας σταθερό το περιεχόμενό τους 
         self.depths = []
         self.youngest_descendants = []
+        self.path = False
 
-        # path στο json με τα περιεχόμενα συγγένειας
-        # TODO: πρέπει να παίρνει argument το path ή το όνομα του json, όχι hardcoded
-        # TODO: για την ώρα και για ευκολότερη διεπαφή με το gui module, παίρνει μόνο το dict family_data και φτιάχνει 1 μόνο δέντρο τη φορά
         # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
-        #self.path = Path.cwd().parent / 'data/data2.json'
-        
-        # δημιουργία σχέσεων συγγένειας
 
-        # πέρασμα όλων των προσώπων στη μεταβλητή people
+        # εαν δόθηκε file path από το main app, ενημέρωση της self.path για έλεγχο από τη load_data
+        if is_path:
+            self.path = True
         self.all_people = self.load_data(family_data)
 
         # χρήση της traverse_down για την εύρεση όλων των πιθανών διαδρομών αναδρομικά από κάθε άτομο στα παιδιά του   
@@ -47,57 +47,19 @@ class Graph:
 
         # ανάθεση γενιάς σε κάθε άτομο - ορίζει το επίπεδο του δέντρου που θα τοποθετηθεί
         self.assign_generations(self.all_people, self.max_depth)
-        # ταξινόμηση ανα γενιά και ανα συζύγους, η μέθοδος show παίρνει το sorted_all και σχεδιάζει το δέντρο
+        # ταξινόμηση ανα γενιά και ανα συζύγους
         self.sorted_all = self.parse(self.all_people, self.max_depth)
 
 
-    """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
-    -> διευκολύνει τη σχεδίαση από την draw
-    -> αποφεύγονται κακές διασταυρώσεις ακμών (χρειάζεται περισσότερες δοκιμές)"""
-    def parse(self, all, generations):
-        sorted_persons = []
-        exclusions = []
-        # για κάθε γενιά
-        for i in range(generations + 1):
-            # για κάθε άτομο στη λίστα
-            for person in all:
-                # αν η γενιά του ανήκει στην εξεταζόμενη
-                if person.generation == i and person not in exclusions:
-                    # αν είναι άντρας και παντρεμένος τον προσθέτουμε στη λίστα μαζί με τη σύζυγό του δίπλα(σειρά: husband-wife)
-                    if person.spouse:
-                        if person.gender == 'male':
-                            sorted_persons.append(person)
-                            sorted_persons.append(person.spouse)
-                            # εξαιρούμε η σύζυγο από μελλοντική αναζήτηση
-                            exclusions.append(person.spouse)
-                    # διαφορετικά *(ανύπαντρος άντρας ή γυναίκα), προσθέτουμε κανονικά στη λίστα
-                    else:
-                        sorted_persons.append(person)
-        # επιστροφή της ταξινομημένης λίστας ατόμων
-        return sorted_persons
-
-
-    """Σχεδιάζει το δέντρο μέσω του graphviz"""
-    def show(self):
-        # αρχικοποιίηση του γραφήματος
-        graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
-        graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
-        graph.edge_attr.update(penwidth=5.0)
-        self.draw(graph, self.sorted_all, self.max_depth)
-        graph.layout(prog="dot")
-        # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
-        self.all_people.clear()
-
-
-    """Φορτώνει το αρχείο json με τις πληροφορίες συγγένειας και επιστρέφει
-    τη λίστα με τα ολοκληρωμένα person objects"""
-    # TODO: προσωρινά απενεργοποιημένο το load json , δουλεύει με dict κατευθείαν απο το gui_oop
+    """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
     def load_data(self, family_data):
-        """# load json
-        with open(json_path) as input_file:
-            data = load(input_file)"""
-        
-        data = family_data
+        # αν δόθηκε path σε json, φορτώνει τα περιεχόμενα του αρχείου
+        if self.path:
+            with open(family_data) as input_file:
+                data = load(input_file)
+        else:
+            # διαφορετικά, φορτώνει απευθείας το dict των νέων γενεαλογικών δεδομένων στο data
+            data = family_data
         
         # pass 1: Δημιουργία Person αντικειμένων
         existing = []
@@ -162,7 +124,7 @@ class Graph:
             if parent not in person2.parents:
                 return False
         return True
-    
+
 
     """traverse_down: βρίσκει σε πόσα βήματα ξεκινώντας από το 0 μπορούμε να φτάσουμε στη νεότερη
     γενιά (αυτή που δεν έχει παιδιά) από κάθε άτομο. Αποθηκεύει κάθε τιμή στη global λίστα depths.
@@ -179,8 +141,7 @@ class Graph:
 
     """assign_generations: αποδίδει αριθμό γενιάς σε κάθε άτομο που έχει δηλωθεί. Ορίσματα η λίστα με όλα
     τα άτομα και το συνολικό πλήθος των γενεών"""
-    def assign_generations(self, people, max_depth):
-        
+    def assign_generations(self, people, max_depth):  
         # εύρεση πρώτα των νεότερων απογόνων
         # αρκεί να ψάξουμε τις διαδρομές από τους γηραιότερους, αυτούς που δεν έχουν γονείς
         oldest = [person for person in people if not person.parents]
@@ -232,6 +193,45 @@ class Graph:
         for parent in person.parents:
             parent.generation = current_generation - 1
             self.assign_generations_up(parent, current_generation - 1)
+
+
+    """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
+    -> διευκολύνει τη σχεδίαση από την draw
+    -> αποφεύγονται κακές διασταυρώσεις ακμών (χρειάζεται περισσότερες δοκιμές)"""
+    def parse(self, all, generations):
+        sorted_persons = []
+        exclusions = []
+        # για κάθε γενιά
+        for i in range(generations + 1):
+            # για κάθε άτομο στη λίστα
+            for person in all:
+                # αν η γενιά του ανήκει στην εξεταζόμενη
+                if person.generation == i and person not in exclusions:
+                    # αν είναι άντρας και παντρεμένος τον προσθέτουμε στη λίστα μαζί με τη σύζυγό του δίπλα(σειρά: husband-wife)
+                    if person.spouse:
+                        if person.gender == 'male':
+                            sorted_persons.append(person)
+                            sorted_persons.append(person.spouse)
+                            # εξαιρούμε η σύζυγο από μελλοντική αναζήτηση
+                            exclusions.append(person.spouse)
+                    # διαφορετικά *(ανύπαντρος άντρας ή γυναίκα), προσθέτουμε κανονικά στη λίστα
+                    else:
+                        sorted_persons.append(person)
+        # επιστροφή της ταξινομημένης λίστας ατόμων
+        return sorted_persons
+
+
+    """Σχεδιάζει το δέντρο μέσω του graphviz"""
+    def show(self):
+        # αρχικοποιίηση του γραφήματος
+        graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
+        graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
+        graph.edge_attr.update(penwidth=5.0)
+        # κλήση draw με τη sorted_all λίστα
+        self.draw(graph, self.sorted_all, self.max_depth)
+        graph.layout(prog="dot")
+        # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
+        self.all_people.clear()
 
 
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
