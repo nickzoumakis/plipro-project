@@ -315,45 +315,6 @@ def is_list_empty(lst):
     else:
         print("The list is not empty")
 
-# TODO: add_person: Aρκεί να φτιάξει το json με τα στοιχεία από το λεξικό family_tree. Χρήση του Person class εδώ μάλλον περιττή
-def add_person():
-    # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία
-    
-    #  προσθήκη μοναδικού κωδικού που έδωσε ο χρήστης (unique_id του Person class καταργήθηκε) 
-    id = entry_id.get()
-
-    name = entry_name.get()
-    surname = entry_surname.get()
-    date_of_birth = entry_date.get()
-    gender = 0 if checkbox_male_var.get() else 1
-    date_of_death = entry_death.get()
-    mother_name = entry_mother_name.get()
-    mother_surname = entry_mother_surname.get()
-    father_name = entry_father_name.get()
-    father_surname = entry_father_surname.get()
-    mother_id = entry_mother_id.get()
-    father_id = entry_father_id.get()
-    spouse_id = entry_spouse.get()
-
-    # αρχικοποιει ενα κενο dict με τα στοιχεία του ατόμου
-    family_tree = {}
-
-    # Ενημέρωση δενδρου με το νέο άτομο
-    family_tree[id] = {
-        "name": name,
-        "surname": surname,
-        "date_of_birth": date_of_birth,
-        "gender" : gender,
-        "date_of_death": date_of_death,
-        "mother_name": mother_name,
-        "mother_surname": mother_surname,
-        "mother_id": mother_id,
-        "father_name": father_name,
-        "father_surname": father_surname,
-        "father_id": father_id,
-        "spouse_id": spouse_id
-    }
-
     # Save το δενδρο στο αρχειο json
     try:
         save_family_tree(family_tree)
@@ -361,12 +322,7 @@ def add_person():
     except Exception as e:
         print("An error occurred while saving the family tree:", e)
 
-    # Προσθέτει το νέο άτομο στο treeview-gui table
-    table.insert('', 'end', values=(
-        id, name, surname, date_of_birth, date_of_death, mother_id, father_id, spouse_id, gender))
-
-    # Clear all input fields
-    clear_fields()
+        
 class SearchDialog(tk.simpledialog.Dialog):
     def body(self, master):
         tk.Label(master, text="ID:").grid(row=0)
@@ -409,6 +365,8 @@ class SearchDialog(tk.simpledialog.Dialog):
         #  Να προσθέσω και άλλα πεδία
         self.result = (unique_id, name, surname, mother_surname, mother_id, father_surname, father_id)
         is_list_empty(Person.all)
+
+
 def search_person():
     dialog = SearchDialog(app)
     is_list_empty(Person.all)
@@ -516,24 +474,6 @@ def update_person():
     else:
         print("Person with ID {} not found.".format(person_id))
 
-def update_treeview():
-    family_tree = load_family_tree()
-    if family_tree:
-        for unique_id, data in family_tree.items():
-            person = Person(unique_id, data["name"], data["surname"], data["mother_name"], data["mother_surname"],
-                            data["mother_id"], data["father_name"], data["father_surname"], data["father_id"], 0)
-            Person.all.append(person)
-            table.insert('', 'end', values=(
-                unique_id,
-                data["name"],
-                data["surname"],
-                data["mother_name"],
-                data["mother_surname"],
-                data["mother_id"],
-                data["father_name"],
-                data["father_surname"],
-                data["father_id"]
-            ))
 """
 
 if __name__ == "__main__":
