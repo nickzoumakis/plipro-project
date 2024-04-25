@@ -1,5 +1,5 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
-from Tree import Person, Graph
+from GraphvizTree import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
 from PIL import Image
