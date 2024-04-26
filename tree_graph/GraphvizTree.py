@@ -281,11 +281,11 @@ class Graph:
                             s.node(link_right, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1], 
                                         label="", height='0.05', color=marriage_colors[0] if is_red else marriage_colors[1])
                         # ακμές
-                        graph.edge(link_left, link_right, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
+                        graph.edge(link_left, point, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
                         graph.edge(point, link_right, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.edge(spouse_id, link_right, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
-                        graph.edge(id, link_left, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
+                        graph.edge(id, link_right, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
+                        graph.edge(spouse_id, link_left, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
