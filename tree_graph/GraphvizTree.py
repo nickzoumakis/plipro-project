@@ -18,6 +18,7 @@ class Person:
         self.spouse = None
         self.generation = None
         self.own_union = None
+        self.oldest_ancestor = None
         Person.all.append(self)
 
 
@@ -48,7 +49,23 @@ class Graph:
 
         # ανάθεση γενιάς σε κάθε άτομο - ορίζει το επίπεδο του δέντρου που θα τοποθετηθεί
         self.assign_generations(self.all_people, self.max_depth)
-        # ταξινόμηση ανα γενιά και ανα συζύγους
+
+        # εύρεση παλαιότερων προγόνων κάθε ατόμου, με χρήση της global ancestors λίστας
+        self.ancestors = []
+        for person in self.all_people:
+            self.oldest_ancestor(person)
+            oldest = sorted(self.ancestors, key=lambda person:person.generation)[0]
+            # αποφυγή διπλοτύπων λόγω αναδρομής
+            if person != oldest and person.spouse != oldest:
+                person.oldest_ancestors = oldest
+            self.ancestors.clear()
+        
+        #debug print
+        """for person in self.all_people:
+            if person.oldest_ancestors:
+                print(f'{person.name}, oldest ancestors: {person.oldest_ancestor.name}, {person.oldest_ancestor.spouse.name}')"""
+
+        # ταξινόμηση ανα γενιά και ανα σύζυγο
         self.sorted_all = self.parse(self.all_people, self.max_depth)
 
 
@@ -194,6 +211,15 @@ class Graph:
         for parent in person.parents:
             parent.generation = current_generation - 1
             self.assign_generations_up(parent, current_generation - 1)
+
+
+    """βρίσκει τον αρχαιότερο πρόγονο ενός ατόμου"""
+    def oldest_ancestor(self, person):
+        if person.parents:
+            for parent in person.parents:
+                self.oldest_ancestor(parent)
+        else:
+            self.ancestors.append(person)
 
 
     """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
