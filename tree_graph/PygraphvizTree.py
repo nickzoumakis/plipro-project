@@ -54,15 +54,15 @@ class Graph:
         for person in self.all_people:
             self.oldest_ancestor(person)
             oldest = sorted(self.ancestors, key=lambda person:person.generation)[0]
-            # αποφυγή διπλοτύπων λόγω αναδρομής
+            # αποφυγή διπλοτύπων αν ο παλιότερος πρόγονος είναι το ίδιο το εξεταζόμενο άτομο
             if person != oldest and person.spouse != oldest:
-                person.oldest_ancestors = oldest
+                person.oldest_ancestor = oldest
             self.ancestors.clear()
         
         #debug print
         """
         for person in self.all_people:
-            if person.oldest_ancestors:
+            if person.oldest_ancestor:
                 print(f'{person.name}, oldest ancestors: {person.oldest_ancestor.name}, {person.oldest_ancestor.spouse.name}')"""
                 
         # ταξινόμηση ανα γενιά και ανα σύζυγο
@@ -220,6 +220,7 @@ class Graph:
                 self.oldest_ancestor(parent)
         else:
             self.ancestors.append(person)
+            return
 
 
     """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
