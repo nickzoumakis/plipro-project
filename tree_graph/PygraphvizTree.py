@@ -312,12 +312,10 @@ class Graph:
                         graph.add_node(link_right, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1], 
                                     label="", height=0.05, color=marriage_colors[0] if is_red else marriage_colors[1])
                         # ακμές
-                        graph.add_edge(link_left, point, color=marriage_colors[0] if is_red else marriage_colors[1])
-                        graph.add_edge(point, link_right, color=marriage_colors[0] if is_red else marriage_colors[1])
+                        graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.add_edge(spouse_id, link_right, color=marriage_colors[0] if is_red else marriage_colors[1])
-                        graph.add_edge(id, link_left, color=marriage_colors[0] if is_red else marriage_colors[1])
+                        graph.add_edges_from([(spouse_id, link_right), (id, link_left)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
