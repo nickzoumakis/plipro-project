@@ -127,7 +127,7 @@ class MainApp:
                             border_width=2, width=20, height=50)
         self.btn_update.place(relx=0.80, rely=0.8, anchor="ne")
 
-        self.btn_delete = ctk.CTkButton(master=self.app, text="Διαγραφή ατόμου", corner_radius=32,
+        self.btn_delete = ctk.CTkButton(master=self.app, text="Διαγραφή ατόμου", corner_radius=32, command=self.delete_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=2, width=20, height=50)
         self.btn_delete.place(relx=0.95, rely=0.8, anchor="ne")
@@ -254,6 +254,22 @@ class MainApp:
         # Ξετσεκάρει τα checkboxes
         for checkbox in [self.checkbox_male, self.checkbox_female]:
             checkbox.deselect()
+
+
+    """διαγράφει άτομο από το treeview και από το family_data"""
+    def delete_person(self):
+        selected_item = self.table.selection()  # Get the selected item
+        if not selected_item:
+            # επιστροφή αν δεν έχει επιλεγεί άτομο
+            print("No item selected.")
+            return
+
+        item_id = self.table.item(selected_item)["values"][0]  # Βρίσκω το Unique ID
+        self.table.delete(selected_item)  # Διαγράφω από το Treeview
+
+        del self.family_data[str(item_id)]  # Αφαίρεση από το family_data
+        #debug print
+        #print(self.family_data)
 
 
     """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
