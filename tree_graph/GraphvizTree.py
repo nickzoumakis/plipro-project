@@ -309,9 +309,9 @@ class Graph:
                             s.attr(rank='same')
                             s.node(point, shape="point")
                             s.node(link_left, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1],
-                                        label="", height='0.05', color=marriage_colors[0] if is_red else marriage_colors[1])
+                                        label="", height='0.01', color=marriage_colors[0] if is_red else marriage_colors[1])
                             s.node(link_right, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1], 
-                                        label="", height='0.05', color=marriage_colors[0] if is_red else marriage_colors[1])
+                                        label="", height='0.01', color=marriage_colors[0] if is_red else marriage_colors[1])
                         # ακμές
                         graph.edge(link_left, point, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')
                         graph.edge(point, link_right, color=marriage_colors[0] if is_red else marriage_colors[1], penwidth='5.0')

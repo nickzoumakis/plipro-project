@@ -308,9 +308,9 @@ class Graph:
                         # κόμβοι
                         graph.add_node(point, shape="point")
                         graph.add_node(link_left, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1],
-                                    label="", height=0.05, color=marriage_colors[0] if is_red else marriage_colors[1])
+                                    label="", height=0.01, color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_node(link_right, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1], 
-                                    label="", height=0.05, color=marriage_colors[0] if is_red else marriage_colors[1])
+                                    label="", height=0.01, color=marriage_colors[0] if is_red else marriage_colors[1])
                         # ακμές
                         graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
