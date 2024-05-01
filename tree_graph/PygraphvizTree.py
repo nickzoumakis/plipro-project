@@ -71,7 +71,7 @@ class Graph:
         print("====END====")
                 
         # ταξινόμηση ανα γενιά και ανα σύζυγο
-        self.sorted_all = self.parse(self.all_people, self.max_depth)
+        self.sorted_all = sorted(self.all_people, key=lambda person:person.generation)
 
 
     """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
