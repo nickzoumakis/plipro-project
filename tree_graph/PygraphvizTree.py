@@ -17,7 +17,7 @@ class Person:
         self.spouse = None
         self.generation = None
         self.own_union = None
-        self.oldest_ancestor = None
+        self.oldest_ancestors = None
         Person.all.append(self)
 
 
@@ -50,20 +50,25 @@ class Graph:
         self.assign_generations(self.all_people, self.max_depth)
         
         # εύρεση παλαιότερων προγόνων κάθε ατόμου, με χρήση της global ancestors λίστας
+        # TODO: μπορεί να υπάρχουν πολλοί παλιότεροι πρόγονοι αν ανήκουν στην ίδια γενιά και έχουν δοθεί από το χρήστη (ισορροπημένο δέντρο). Πρέπει να εμφανίζονται όλοι
+        # TODO: να μπει σε ξεχωριστό method ?
         self.ancestors = []
         for person in self.all_people:
             self.oldest_ancestor(person)
-            oldest = sorted(self.ancestors, key=lambda person:person.generation)[0]
+            oldest = sorted(self.ancestors, key=lambda person:person.generation)
             # αποφυγή διπλοτύπων αν ο παλιότερος πρόγονος είναι το ίδιο το εξεταζόμενο άτομο
-            if person != oldest and person.spouse != oldest:
-                person.oldest_ancestor = oldest
+            if person != oldest[0] and person.spouse != oldest[0]:
+                person.oldest_ancestors = [ancestor for ancestor in oldest if ancestor.generation == oldest[0].generation]
             self.ancestors.clear()
         
-        #debug print
-        """
+        #debug print for ancestors
         for person in self.all_people:
-            if person.oldest_ancestor:
-                print(f'{person.name}, oldest ancestors: {person.oldest_ancestor.name}, {person.oldest_ancestor.spouse.name}')"""
+            if person.oldest_ancestors:
+                print(f'{person.name}, oldest ancestors:')
+                for ancestor in person.oldest_ancestors:
+                    print(f'{ancestor.name}')
+                print("===============")
+        print("====END====")
                 
         # ταξινόμηση ανα γενιά και ανα σύζυγο
         self.sorted_all = self.parse(self.all_people, self.max_depth)
