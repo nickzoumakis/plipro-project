@@ -288,7 +288,7 @@ class MainApp:
             dimensions = f'{img.width}x{img.height}'
             # άνοιγμα εικόνας σε νέο παράθυρο tkinter
             # όταν φτιάχνω νέο παράθυρο, ποτέ δεν το ορίζω ως καινούριο tk.Τk() αντικείμενο αλλά σαν TopLevel του master window
-            tree_img = tk.Toplevel()
+            tree_img = ctk.CTkToplevel()
             tree_img.title("Γενεαλογικό Δέντρο")
             tree_img.geometry(dimensions)
             # TODO: να βρίσκει μόνο του το path ανάλογα με το όνομα της εικόνας

@@ -255,16 +255,13 @@ class Graph:
 
 
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
-    def show(self, drawsimple=False):
+    def show(self):
         # αρχικοποιίηση του γραφήματος
         graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
-        # κλήση draw(ή draw2) με τη sorted_all λίστα
-        if not drawsimple:
-            self.draw(graph, self.sorted_all, self.max_depth)
-        else:
-            self.draw2(graph, self.sorted_all, self.max_depth)
+        # κλήση draw με τη sorted_all λίστα
+        self.draw(graph, self.sorted_all, self.max_depth)
         graph.layout(prog="dot")
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
         self.all_people.clear()
@@ -383,115 +380,10 @@ class Graph:
         #graph.write("tree.dot")
         graph.draw("tree.png")
 
-    """draw2: απλούστερος αλγόριθμος σχεδίασης (χωρίς αγκύλη για την ένωση των γονιών) -> προτιμότερο για απλούστερα δέντρα ?"""
-        # παραλλαγή με επιπλέον κόμβο για τους γονείς
-    def draw2(self, graph, people, max_generation):
-            # p_nodes μετρητής σημείων ένωσης συζύγων/γονιών
-            p_nodes = 0
-            # sib_nodes μετρητής αόρατων κόμβων για τις ενώσεις
-            sib_nodes = 0
-            # ξεκινάμε από την παλιότερη γενιά
-            current_gen = 0
-            node_fill = ["cadetblue1", "lightpink"]
-            # 2 χρώματα για κάθε γάμο
-            marriage_colors = ["red", "chartreuse"]
-            for person in people:
-                graph.add_node(person.id, label=f"{person.name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
-            # για κάθε γενιά
-            while current_gen <= max_generation:
-                # completed links λίστες εξαιρούν αδέρφια και συζύγους για να μη γίνονται πολλαπλές ενώσεις
-                completed_spouse_links = []
-                completed_sibling_links = []
-                is_red = True
-                # για κάθε άτομο 
-                for person in people:
-                    if person.generation == current_gen:
-                        # δημιουργία γονιών
-                        if person.spouse and person.spouse not in completed_spouse_links:
-                            # ανάθεση σημείου ένωσης γάμου
-                            person.own_union = p_nodes
-                            person.spouse.own_union = p_nodes
-                            # λήψη στοιχείων
-                            id = person.id
-                            name = person.name
-                            spouse_id = person.spouse.id
-                            spouse_name = person.spouse.name
-                            # δημιουργία κόμβων και ακμών ένωσης γονιών
-                            point = "point" + str(p_nodes)
-                            # κόμβοι
-                            graph.add_node(point, shape="point")
-                            # ακμές
-                            graph.add_edges_from([(id, point), (point, spouse_id)], color=marriage_colors[0] if is_red else marriage_colors[1])
-                            graph.add_subgraph([id, point, spouse_id], rank="same")
-                            # σύνδεση link left & link right με κάθε σύζυγο
-                            # προσθήκη στη λίστα εξαιρέσεων
-                            completed_spouse_links.append(person)
-                            # αύξηση μετρητή σημείων ένωσης
-                            p_nodes += 1
-                            # αλλαγή χρώματος για την επόμενη ένωση
-                            if is_red:
-                                is_red = False
-                        # δημιουργία παιδιών
-                        if person.parents and person not in completed_sibling_links:
-                            # στοιχεία ατόμου που εξετάζεται
-                            id = person.id
-                            name = person.name
-                            # εύρεση σημείου ένωσης γονιών του
-                            parent_union = "point" + str(person.parents[0].own_union)
-                            # αν 1 παιδί, ένωση αμέσως
-                            if not person.siblings:
-                                # δημιουργία node σύνδεσης
-                                sib = "sib" + str(sib_nodes)
-                                graph.add_node(sib, label="", height=0.01, width=0.01)
-                                graph.add_edge(parent_union, sib, color="blue")
-                                graph.add_edge(sib, id, color="blue")
-                                sib_nodes += 1
-                            # αν υπάρχουν αδέρφια
-                            else:
-                                even = False
-                                inv_nodes = []
-                                # λίστα με όλα τα αδέρφια συνολικά (+το εξεταζόμενο πρόσωπο)
-                                all = [sibling.id for sibling in person.siblings]
-                                all.append(id)
-                                total = len(all)
-                                if total % 2 == 0:
-                                    even = True
-                                    total = total + 1
-                                # κόμβοι σύνδεσης
-                                for _ in range(total):
-                                    sib = "sib" + str(sib_nodes)
-                                    graph.add_node(sib, label="", height=0.01, width=0.01)
-                                    inv_nodes.append(sib)
-                                    sib_nodes += 1
-                                # σύνδεση κόμβων μεταξύ τους
-                                for i in range(total - 1):
-                                    graph.add_edge(inv_nodes[i], inv_nodes[i + 1], color="blue")
-                                graph.add_subgraph(inv_nodes, rank="same")
-                                if even:
-                                    # εξαίρεση μεσαίου στοιχείου από την ένωση αν έχουμε ζυγό πλήθος αδελφών (το μέσον της δομής μένει κενό)
-                                    bridge = inv_nodes.pop(total // 2)
-                                # ένωση των κόμβων με κάθε αδερφό
-                                for link, sibling in zip(inv_nodes, all):
-                                    graph.add_edge(link, sibling, color="blue")
-                                # ένωση δομής με γονείς
-                                if even:
-                                    graph.add_edge(parent_union, bridge, color="blue")
-                                else:
-                                    graph.add_edge(parent_union, inv_nodes[len(inv_nodes) // 2], color="blue")
-                                # εξαίρεση αδερφιών από μελλοντικές συνδέσεις
-                                for sibling in person.siblings:
-                                    completed_sibling_links.append(sibling)
-
-                # προχωράμε στην επόμενη γενιά
-                current_gen += 1
-            graph.layout(prog="dot")
-            #graph.write("tree.dot")
-            graph.draw("tree.png")
 
 def main():
     g = Graph()
-    # ενεργό το drawsimple για χρήση απλούστερο αλγορίθμου σχεδίασης
-    g.show(drawsimple=True)
+    g.show()
     
     
 if __name__ == "__main__":
