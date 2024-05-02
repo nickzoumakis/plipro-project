@@ -272,18 +272,37 @@ class MainApp:
         #print(self.family_data)
 
 
-    """create_tree: Καλεί το Graph class (απο το module tree_oop) και σχεδιάζει εικόνα του δέντρου"""
+    """create_tree: Αποθήκευση γενεαλογικών δεδομένων στο δίσκο. 
+    Καλεί το Graph class (απο το module GraphvizTree) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
-        # TODO: Ονοματοδοσία αρχείου και θέση στο path
+        # ονοματοδοσία json και γραφήματος με βάση το πρώτο όνομα που εισήγαγε ο χρήστης στο family_data
+        filename = None
+        for i, key in enumerate(self.family_data.keys()):
+            if i == 0:
+                json_filename = f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}.json"
+                # img_filename χωρίς επέκταση αφού στην show της Graph δίνεται σε άλλο όρισμα (format='png')
+                img_filename =  f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}"
+        data_file_path = Path.cwd().parent / 'data' / json_filename
+        img_file_path = Path.cwd().parent / 'graph'
+
+        # dump json στο φάκελο data
+        with open(data_file_path, "w") as file:
+            json.dump(self.family_data, file, indent=4)
+
+        # δημιουργία γραφήματος και αποθήκευση rendered εικόνας
         graph = Graph(self.family_data)
-        graph.show()
-        self.load_image()
+        graph.show(img_filename, img_file_path)
+        # πέρασμα του πλήρους ονόματος μαζί με την επέκταση στην load_image()
+        full_img_filename = img_filename + '.png'
+        self.load_image(full_img_filename)
 
 
     """ load_image: άνοιγμα εικόνας δέντρου σε νέο παράθυρο tkinter """
-    def load_image(self):
+    def load_image(self, img_filename):
+            # ανάθεση στο path
+            img_path = Path.cwd().parent / 'graph' / img_filename
             # άνοιγμα εικόνας με PIL
-            img = Image.open("tree.png")
+            img = Image.open(img_path)
             # ακριβές μέγεθος εικόνας για τις διαστάσεις του παραθύρου
             dimensions = f'{img.width}x{img.height}'
             # άνοιγμα εικόνας σε νέο παράθυρο tkinter
@@ -291,9 +310,7 @@ class MainApp:
             tree_img = ctk.CTkToplevel()
             tree_img.title("Γενεαλογικό Δέντρο")
             tree_img.geometry(dimensions)
-            # TODO: να βρίσκει μόνο του το path ανάλογα με το όνομα της εικόνας
-            # TODO: ονοματοδοσία αρχείων!
-            img = tk.PhotoImage(file="tree.png")
+            img = tk.PhotoImage(file=img_path)
             img_label = tk.Label(tree_img, image=img)
             img_label.pack()
             tree_img.mainloop()

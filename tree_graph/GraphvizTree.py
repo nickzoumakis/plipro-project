@@ -255,13 +255,13 @@ class Graph:
 
 
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
-    def show(self):
+    def show(self, img_filename, img_filepath):
         # αρχικοποιίηση του γραφήματος
-        graph = gv.Graph(format='png',filename='tree',
+        graph = gv.Graph(format='png',filename=img_filename,
                          graph_attr={'ranksep':"0.75", 'nodesep':"2.0", 'splines':'ortho'},
                          node_attr={'shape':"box",  'penwidth':'2.0', 'fontsize':"20"})
         # κλήση draw με τη sorted_all λίστα
-        self.draw(graph, self.sorted_all, self.max_depth)
+        self.draw(graph, self.sorted_all, self.max_depth, img_filepath)
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
         self.all_people.clear()
 
@@ -269,7 +269,7 @@ class Graph:
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
         τεθεί με βάση το dot layout του graphviz"""
     # παραλλαγή με επιπλέον κόμβο για τους γονείς
-    def draw(self, graph, people, max_generation):
+    def draw(self, graph, people, max_generation, img_filepath):
         # p_nodes μετρητής σημείων ένωσης συζύγων/γονιών
         p_nodes = 0
         # sib_nodes μετρητής αόρατων κόμβων για τις ενώσεις
@@ -380,7 +380,7 @@ class Graph:
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
         #graph.write("tree.dot")
-        graph.render()
+        graph.render(directory = img_filepath)
 
 
 def main():
