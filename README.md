@@ -26,3 +26,5 @@
     ![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/gentree_new.png)
 
 - *update 1/5/2024* : Προσθήκη δυνατότητας διαγραφής ατόμου από το δέντρο (Κουμπί Διαγραφή Ατόμου)
+
+- *update 2/5/2024* : Νέα δυνατότητα: file saving (json και png σε φακέλους data και graph αντίστοιχα)
