@@ -172,7 +172,7 @@ class MainApp:
             self.checkbox_female.select()
 
 
-    """για την ώρα η show_items απλά εμφανίζει στο terminal τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
+    """η show_items εμφανίζει στις φόρμες τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
     # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
         # καθάρισμα αρχικά των πεδίων
