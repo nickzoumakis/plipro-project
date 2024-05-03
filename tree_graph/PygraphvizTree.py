@@ -62,16 +62,16 @@ class Graph:
             self.ancestors.clear()
         
         #debug print for ancestors
-        for person in self.all_people:
+        """for person in self.all_people:
             if person.oldest_ancestors:
                 print(f'{person.name}, oldest ancestors:')
                 for ancestor in person.oldest_ancestors:
                     print(f'{ancestor.name}')
                 print("===============")
-        print("====END====")
+        print("====END====")"""
                 
-        # ταξινόμηση ανα γενιά και ανα σύζυγο
-        self.sorted_all = self.parse(self.all_people, self.max_depth)
+        # ταξινόμηση ανα γενιά
+        self.sorted_all = sorted(self.all_people, key=lambda person:person.generation)
 
 
     """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
@@ -228,40 +228,16 @@ class Graph:
             return
 
 
-    """Ταξινομεί τα άτομα ανα γενιά και τοποθετεί τους συζύγους δίπλα τον έναν στον άλλο 
-    -> διευκολύνει τη σχεδίαση από την draw
-    -> αποφεύγονται κακές διασταυρώσεις ακμών (χρειάζεται περισσότερες δοκιμές)"""
-    def parse(self, all, generations):
-        sorted_persons = []
-        exclusions = []
-        # για κάθε γενιά
-        for i in range(generations + 1):
-            # για κάθε άτομο στη λίστα
-            for person in all:
-                # αν η γενιά του ανήκει στην εξεταζόμενη
-                if person.generation == i and person not in exclusions:
-                    # αν είναι άντρας και παντρεμένος τον προσθέτουμε στη λίστα μαζί με τη σύζυγό του δίπλα(σειρά: husband-wife)
-                    if person.spouse:
-                        if person.gender == 'male':
-                            sorted_persons.append(person)
-                            sorted_persons.append(person.spouse)
-                            # εξαιρούμε η σύζυγο από μελλοντική αναζήτηση
-                            exclusions.append(person.spouse)
-                    # διαφορετικά *(ανύπαντρος άντρας ή γυναίκα), προσθέτουμε κανονικά στη λίστα
-                    else:
-                        sorted_persons.append(person)
-        # επιστροφή της ταξινομημένης λίστας ατόμων
-        return sorted_persons
-
-
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
-    def show(self):
+    def show(self, filename, filepath):
         # αρχικοποιίηση του γραφήματος
         graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
         # κλήση draw με τη sorted_all λίστα
-        self.draw(graph, self.sorted_all, self.max_depth)
+        filename = filename + '.png'
+        _filepath = Path.cwd().parent / 'graph' / filename
+        self.draw(graph, self.sorted_all, self.max_depth, _filepath)
         graph.layout(prog="dot")
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
         self.all_people.clear()
@@ -270,7 +246,7 @@ class Graph:
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
         τεθεί με βάση το dot layout του graphviz"""
     # παραλλαγή με επιπλέον κόμβο για τους γονείς
-    def draw(self, graph, people, max_generation):
+    def draw(self, graph, people, max_generation, filepath):
         # p_nodes μετρητής σημείων ένωσης συζύγων/γονιών
         p_nodes = 0
         # sib_nodes μετρητής αόρατων κόμβων για τις ενώσεις
@@ -306,11 +282,9 @@ class Graph:
                         link_left = "link" + str(id)
                         link_right = "link" + str(spouse_id)
                         # κόμβοι
-                        graph.add_node(point, shape="point")
-                        graph.add_node(link_left, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1],
-                                    label="", height=0.01, color=marriage_colors[0] if is_red else marriage_colors[1])
-                        graph.add_node(link_right, shape="circle", style="filled", fillcolor=marriage_colors[0] if is_red else marriage_colors[1], 
-                                    label="", height=0.01, color=marriage_colors[0] if is_red else marriage_colors[1])
+                        graph.add_node(point, shape="circle", label="", height=0.01)
+                        graph.add_node(link_left, shape="circle", label="", height=0.01)
+                        graph.add_node(link_right, shape="circle", label="", height=0.01)
                         # ακμές
                         graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
@@ -334,7 +308,7 @@ class Graph:
                         if not person.siblings:
                             # δημιουργία node σύνδεσης
                             sib = "sib" + str(sib_nodes)
-                            graph.add_node(sib, label="", height=0.01, width=0.01)
+                            graph.add_node(sib, shape="circle", label="", height=0.01)
                             graph.add_edge(parent_union, sib, color="blue")
                             graph.add_edge(sib, id, color="blue")
                             sib_nodes += 1
@@ -352,7 +326,7 @@ class Graph:
                             # κόμβοι σύνδεσης
                             for _ in range(total):
                                 sib = "sib" + str(sib_nodes)
-                                graph.add_node(sib, label="", height=0.01, width=0.01)
+                                graph.add_node(sib, shape="circle", label="", height=0.01)
                                 inv_nodes.append(sib)
                                 sib_nodes += 1
                             # σύνδεση κόμβων μεταξύ τους
@@ -378,7 +352,7 @@ class Graph:
             current_gen += 1
         graph.layout(prog="dot")
         #graph.write("tree.dot")
-        graph.draw("tree.png")
+        graph.draw(filepath)
 
 
 def main():

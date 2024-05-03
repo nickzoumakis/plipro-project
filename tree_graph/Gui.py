@@ -1,5 +1,5 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
-from GraphvizTree import Person, Graph
+from PygraphvizTree import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
 from PIL import Image
@@ -176,8 +176,41 @@ class MainApp:
     # TODO: να εμφανίζονται τα στοιχεία αυτά στις φόρμες του παραθύρου όταν ο χρήστης κάνει κλικ
     # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
-        for i in self.table.selection():
-            print(self.table.item(i)['values'])
+        # καθάρισμα αρχικά των πεδίων
+        self.clear_fields()
+        entries = [self.entry_name,
+                    self.entry_surname,
+                    self.entry_date,
+                    self.entry_id,
+                    self.entry_mother_name,
+                    self.entry_mother_surname,
+                    self.entry_mother_id,
+                    self.entry_father_name,
+                    self.entry_father_surname,
+                    self.entry_father_id,
+                    self.entry_spouse,
+                    self.entry_death]
+        
+        keys = ['name',
+                'surname',
+                'date_of_birth',
+                'date_of_death',
+                'mother_name',
+                'mother_surname',
+                'mother_id',
+                'father_name',
+                'father_surname',
+                'father_id',
+                'spouse_id']
+        # εύρεση των στοιχείων του ατόμου με βάση το id από το family_data dict και όχι από τα selected items του treeview (δεν περιλαμβάνει κενά πεδία)
+        selected_item = self.table.selection()
+        selected_id = str(self.table.item(selected_item)['values'][0])
+        for i, (entry, key) in enumerate(zip(entries, keys)):
+            if  i == 3:
+                # 3o στοιχείο το ID του ατομου, το παίρνουμε κατευθείαν από το selected_id αφού στο dict δεν υπάρχει μέσα στα keys
+                entry.insert(0, selected_id)
+            else:
+                entry.insert(0, self.family_data[selected_id][key])
     
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
@@ -276,7 +309,6 @@ class MainApp:
     Καλεί το Graph class (απο το module GraphvizTree) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
         # ονοματοδοσία json και γραφήματος με βάση το πρώτο όνομα που εισήγαγε ο χρήστης στο family_data
-        filename = None
         for i, key in enumerate(self.family_data.keys()):
             if i == 0:
                 json_filename = f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}.json"
