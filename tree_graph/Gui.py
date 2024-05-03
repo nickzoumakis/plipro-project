@@ -203,6 +203,9 @@ class MainApp:
                 'spouse_id']
         # εύρεση των στοιχείων του ατόμου με βάση το id από το family_data dict και όχι από τα selected items του treeview (δεν περιλαμβάνει κενά πεδία)
         selected_item = self.table.selection()
+        # διακοπή της συνάρτησης αν δεν έχει επιλεγεί άτομο ή γίνει διαγραφή του επιλεγμένου
+        if not selected_item:
+            return
         selected_id = str(self.table.item(selected_item)['values'][0])
         for i, (entry, key) in enumerate(zip(entries, keys)):
             if  i == 3:
