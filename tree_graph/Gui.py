@@ -173,7 +173,6 @@ class MainApp:
 
 
     """για την ώρα η show_items απλά εμφανίζει στο terminal τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
-    # TODO: να εμφανίζονται τα στοιχεία αυτά στις φόρμες του παραθύρου όταν ο χρήστης κάνει κλικ
     # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
         # καθάρισμα αρχικά των πεδίων
@@ -372,11 +371,6 @@ def load_family_tree():
     except FileNotFoundError:
         print("Family tree file not found.")
         return None
-
-def save_family_tree(family_tree):
-    with open("familia_tree.json", "w") as f:
-        json.dump(family_tree, f, indent=4)
-
 
 def is_list_empty(lst):
     if len(lst) == 0:
