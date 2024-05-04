@@ -1,7 +1,7 @@
 from pathlib import Path
 import pygraphviz as pgv
 from json import load
-
+from PIL import Image
 
 """Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
     προσβάσιμο από οποιοδήποτε instance μέσω του person.all"""
@@ -31,9 +31,8 @@ class Graph:
         self.depths = []
         self.youngest_descendants = []
         self.path = False
-        # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου, το mainapp πρέπει να πάρει το mirrored !
-        self.original_nodes = {}
-        self.mirrored_nodes = {}
+        # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου
+        self.node_coordinates = {}
 
         # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
 
@@ -53,7 +52,6 @@ class Graph:
         self.assign_generations(self.all_people, self.max_depth)
         
         # εύρεση παλαιότερων προγόνων κάθε ατόμου, με χρήση της global ancestors λίστας
-        # TODO: μπορεί να υπάρχουν πολλοί παλιότεροι πρόγονοι αν ανήκουν στην ίδια γενιά και έχουν δοθεί από το χρήστη (ισορροπημένο δέντρο). Πρέπει να εμφανίζονται όλοι
         # TODO: να μπει σε ξεχωριστό method ?
         self.ancestors = []
         for person in self.all_people:
@@ -244,7 +242,7 @@ class Graph:
         graph.layout(prog="dot")
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
         #TODO: να μπει ξεχωριστό method, δεν πρέπει να γίνει clear η λίστα όσο ο χρήστης βλέπει το δέντρο, το onclick event πρέπει να έχει πρόσβαση στην all_people
-        self.all_people.clear()
+        #self.all_people.clear()
 
 
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
@@ -354,19 +352,33 @@ class Graph:
 
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
+
         graph.layout(prog="dot")
-        # με την ολοκλήρωση του layout, ενημέρωση του node_coordinates
+        graph.draw(filepath)
+        # με την εικόνα σχεδιασμένη, προχωράμε στην ανάκτηση των συντεταγμένων των κόμβων
+        img = Image.open(filepath)
+        height = img.height
         for node in graph.nodes():
             # δεν ενδιαφέρουν τα αόρατα nodes
             if graph.get_node(node).attr['label']:
-                self.original_nodes[node] = (int((4/3) * int(graph.get_node(node).attr['pos'].split(',')[0])), int((4/3) * int(graph.get_node(node).attr['pos'].split(',')[1])))
-        # αντιστροφή των keys (nodes) αφού το layout σηματοδοτεί ανάποδα τον άξονα y σε σχέση με το tkinter
-        nodes = [node for node in self.original_nodes]
-        nodes = nodes[:: - 1]
-        for node1, node2 in zip(nodes, self.original_nodes):
-            self.mirrored_nodes[node1] = self.original_nodes[node2]
-        #graph.write("tree.dot")
-        graph.draw(filepath)
+                # αφαιρούμε την y από το ύψος της εικόνας αφού το graphviz μετράει ανάποδα τον άξονα y 
+                self.node_coordinates[node] = (int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[0]))), height -  int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[1]))))
+       
+        
+    """επιστρέφει τις πληροφορίες του Person object - για την ώρα μόνο το όνομα στο terminal -με βάση τις συντεταγμένες (για χρήση από τη MainApp)"""
+    def get_node_info(self, event):
+        # αυθαίρετα προσδιορισμένα όρια κόμβων
+        width = 40
+        height = 20
+        for node_id, (x, y) in self.node_coordinates.items():
+            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
+                # εύρεση του person που αντιστοιχεί στο node
+                person = self.get_person(node_id, self.all_people)
+                print(f"{person.name}")
+    
+
+    def delete_people(self):
+        self.all_people.clear()
 
 
 def main():

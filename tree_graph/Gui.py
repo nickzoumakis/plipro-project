@@ -328,11 +328,11 @@ class MainApp:
         graph.show(img_filename, img_file_path)
         # πέρασμα του πλήρους ονόματος μαζί με την επέκταση στην load_image()
         full_img_filename = img_filename + '.png'
-        self.load_image(full_img_filename)
+        self.load_image(full_img_filename, graph)
 
 
     """ load_image: άνοιγμα εικόνας δέντρου σε νέο παράθυρο tkinter """
-    def load_image(self, img_filename):
+    def load_image(self, img_filename, graph):
             # ανάθεση στο path
             img_path = Path.cwd().parent / 'graph' / img_filename
             # άνοιγμα εικόνας με PIL
@@ -346,10 +346,19 @@ class MainApp:
             tree_img.geometry(dimensions)
             img = tk.PhotoImage(file=img_path)
             img_label = tk.Label(tree_img, image=img)
+            # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info της Graph
+            tree_img.bind("<Button-1>", graph.get_node_info)
             img_label.pack()
+            # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
+            tree_img.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(tree_img, graph))
             tree_img.mainloop()
+            
 
-
+    def kill_window(self, window, graph):
+        graph.delete_people()
+        window.destroy()
+    
+    
     """run: Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
     def run(self):
         self.table.pack(fill='both', expand=True)
