@@ -31,6 +31,9 @@ class Graph:
         self.depths = []
         self.youngest_descendants = []
         self.path = False
+        # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου, το mainapp πρέπει να πάρει το mirrored !
+        self.original_nodes = {}
+        self.mirrored_nodes = {}
 
         # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
 
@@ -240,6 +243,7 @@ class Graph:
         self.draw(graph, self.sorted_all, self.max_depth, _filepath)
         graph.layout(prog="dot")
         # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
+        #TODO: να μπει ξεχωριστό method, δεν πρέπει να γίνει clear η λίστα όσο ο χρήστης βλέπει το δέντρο, το onclick event πρέπει να έχει πρόσβαση στην all_people
         self.all_people.clear()
 
 
@@ -351,6 +355,16 @@ class Graph:
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
         graph.layout(prog="dot")
+        # με την ολοκλήρωση του layout, ενημέρωση του node_coordinates
+        for node in graph.nodes():
+            # δεν ενδιαφέρουν τα αόρατα nodes
+            if graph.get_node(node).attr['label']:
+                self.original_nodes[node] = (int((4/3) * int(graph.get_node(node).attr['pos'].split(',')[0])), int((4/3) * int(graph.get_node(node).attr['pos'].split(',')[1])))
+        # αντιστροφή των keys (nodes) αφού το layout σηματοδοτεί ανάποδα τον άξονα y σε σχέση με το tkinter
+        nodes = [node for node in self.original_nodes]
+        nodes = nodes[:: - 1]
+        for node1, node2 in zip(nodes, self.original_nodes):
+            self.mirrored_nodes[node1] = self.original_nodes[node2]
         #graph.write("tree.dot")
         graph.draw(filepath)
 
