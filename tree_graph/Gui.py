@@ -394,6 +394,7 @@ class MainApp:
         fontsize = 16
         popup.title("Πληροφορίες ατόμου")
 
+        #TODO: να προστεθούν και άλλα labels για ημερομηνία γέννησης/θανάτου
         label_name = ctk.CTkLabel(popup, text="Όνομα: " + self.current_clicked.name, font=("Arial", fontsize))
         label_name.pack()
 
