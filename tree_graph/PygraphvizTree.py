@@ -11,6 +11,8 @@ class Person:
         self.id = id
         self.name = name
         self.gender = None
+        self.dob = None
+        self.dod = None
         self.children = []
         self.parents = []
         self.siblings = []
@@ -93,6 +95,8 @@ class Graph:
             if id not in existing:
                 current = Person(id, f"{data[id]['name']} {data[id]['surname']}")
                 current.gender = data[id]['gender']
+                current.dob = data[id]['date_of_birth']
+                current.dod = data[id]['date_of_death']
             else:
                 # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
                 all = current.all
@@ -240,9 +244,6 @@ class Graph:
         _filepath = Path.cwd().parent / 'graph' / filename
         self.draw(graph, self.sorted_all, self.max_depth, _filepath)
         graph.layout(prog="dot")
-        # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
-        #TODO: να μπει ξεχωριστό method, δεν πρέπει να γίνει clear η λίστα όσο ο χρήστης βλέπει το δέντρο, το onclick event πρέπει να έχει πρόσβαση στην all_people
-        #self.all_people.clear()
 
 
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
@@ -364,19 +365,19 @@ class Graph:
                 # αφαιρούμε την y από το ύψος της εικόνας αφού το graphviz μετράει ανάποδα τον άξονα y 
                 self.node_coordinates[node] = (int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[0]))), height -  int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[1]))))
        
-        
-    """επιστρέφει τις πληροφορίες του Person object - για την ώρα μόνο το όνομα στο terminal -με βάση τις συντεταγμένες (για χρήση από τη MainApp)"""
-    def get_node_info(self, event):
-        # αυθαίρετα προσδιορισμένα όρια κόμβων
-        width = 40
-        height = 20
-        for node_id, (x, y) in self.node_coordinates.items():
-            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
-                # εύρεση του person που αντιστοιχεί στο node
-                person = self.get_person(node_id, self.all_people)
-                print(f"{person.name}")
+
+    """Methods για επικοινωνία με το MainApp"""
+    """επιστρέφει τις συντεταγμένες κάθε κόμβου όταν κληθεί"""
+    def send_coordinates(self):
+        return self.node_coordinates
+
+
+    """επιστρέφει τη λίστα με όλα τα Person objects"""
+    def send_people(self):
+        return self.all_people
     
 
+    """καθαρίζει τη λίστα με τα Person objects, πρέπει να καλείται σε κάθε επανασχεδίαση δέντρου, αλλιώς έχουμε edge overlaps"""
     def delete_people(self):
         self.all_people.clear()
 

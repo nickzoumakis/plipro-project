@@ -19,6 +19,11 @@ class MainApp:
         
         # αρχικοποίηση κενού dict που θα φιλοξενήσει όλα τα στοιχεία των ατόμων που προσθέτει ο χρήστης
         self.family_data = {}
+        # αρχικοποίηση dict συντεταγμένων κόμβων
+        self.coordinates = {}
+        # κενή αρχικά λίστα με όλα τα Person objects που θα δημιουργηθούν από το Tree class
+        self.all = []
+        self.current_clicked = None
 
         # Στοιχεία και γεωμετρία παραθύρου
         self.app = ctk.CTk()
@@ -326,6 +331,13 @@ class MainApp:
         # δημιουργία γραφήματος και αποθήκευση rendered εικόνας
         graph = Graph(self.family_data)
         graph.show(img_filename, img_file_path)
+
+        # ενημέρωση του coordinates dict με τις συντεταγμένες από το Tree
+        self.coordinates = graph.send_coordinates()
+
+        # ενημέρωση της λίστας με τα Person objects
+        self.all = graph.send_people()
+
         # πέρασμα του πλήρους ονόματος μαζί με την επέκταση στην load_image()
         full_img_filename = img_filename + '.png'
         self.load_image(full_img_filename, graph)
@@ -347,13 +359,60 @@ class MainApp:
             img = tk.PhotoImage(file=img_path)
             img_label = tk.Label(tree_img, image=img)
             # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info της Graph
-            tree_img.bind("<Button-1>", graph.get_node_info)
+            tree_img.bind("<Button-1>", self.get_node_info)
             img_label.pack()
             # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
             tree_img.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(tree_img, graph))
             tree_img.mainloop()
-            
 
+
+    """αξιοποιεί τις συντεταγμένες x, y του click event για να εντοπίσει τον κόμβο που πάτησε ο χρήστης στο παράθυρο του δέντρου"""
+    def get_node_info(self, event):
+        # αυθαίρετα προσδιορισμένα όρια κόμβων
+        width = 40
+        height = 20
+        for node_id, (x, y) in self.coordinates.items():
+            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
+                # εύρεση του person που αντιστοιχεί στο node
+                self.get_person(node_id, self.all)
+                # άνοιγμα νέου παραθύρου με τις πληροφορίες του ατόμου
+                self.open_info_win()
+
+
+    """θέτει στην current_clicked το Person object με τα στοιχεία του κόμβου που πάτησε ο χρήστης"""
+    def get_person(self, id, all):
+        id_list = [person.id for person in all]
+        for i, person_id in enumerate(id_list):
+            if person_id == id:
+                self.current_clicked =  all[i]
+
+
+    """ανοίγει νέο παράθυρο με τις πληροφορίες του ατόμου που έγινε κλικ"""
+    def open_info_win(self):
+        popup = ctk.CTkToplevel()
+        popup.configure(bg="lightgray")
+        fontsize = 16
+        popup.title("Πληροφορίες ατόμου")
+
+        label_name = ctk.CTkLabel(popup, text="Όνομα: " + self.current_clicked.name, font=("Arial", fontsize))
+        label_name.pack()
+
+        ancestors = ""
+        if self.current_clicked.oldest_ancestors:
+            for i, ancestor in enumerate(self.current_clicked.oldest_ancestors):
+                if i != len(self.current_clicked.oldest_ancestors) - 1:
+                    ancestors += ancestor.name + ", "
+                else:
+                    ancestors += ancestor.name
+        if ancestors:
+            label_ancestor = ctk.CTkLabel(popup, text="Παλαιότεροι πρόγονοι: " + ancestors, font=("Arial", fontsize))
+            label_ancestor.pack()
+
+        close_button = ctk.CTkButton(popup, text="Κλείσιμο", command=popup.destroy)
+        close_button.pack()
+
+
+    """διαγράφει τη λίστα με τα Person objects στο Tree class"""
     def kill_window(self, window, graph):
         graph.delete_people()
         window.destroy()

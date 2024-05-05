@@ -1,0 +1,16 @@
+{
+    "1": {
+        "name": "nick",
+        "surname": "zoum",
+        "date_of_birth": "",
+        "gender": "male",
+        "date_of_death": "",
+        "mother_name": "valia",
+        "mother_surname": "serdaki",
+        "mother_id": "2",
+        "father_name": "george",
+        "father_surname": "zoumakis",
+        "father_id": "3",
+        "spouse_id": ""
+    }
+}
