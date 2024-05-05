@@ -358,7 +358,7 @@ class MainApp:
             tree_img.geometry(dimensions)
             img = tk.PhotoImage(file=img_path)
             img_label = tk.Label(tree_img, image=img)
-            # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info της Graph
+            # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info
             tree_img.bind("<Button-1>", self.get_node_info)
             img_label.pack()
             # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
@@ -397,18 +397,25 @@ class MainApp:
         #TODO: να προστεθούν και άλλα labels για ημερομηνία γέννησης/θανάτου
         label_name = ctk.CTkLabel(popup, text="Όνομα: " + self.current_clicked.name, font=("Arial", fontsize))
         label_name.pack()
-
+        parents = ""
         ancestors = ""
+        # αν υπάρχουν γονείς, τους προσθέτουμε στο string parents χωρίζοντας με κόμμα
+        if self.current_clicked.parents:
+            parents = f"{self.current_clicked.parents[0].name}, {self.current_clicked.parents[1].name}"
+        # αν το άτομο έχει παλιότερους προγόνους, προσθέτουμε τα ονόματά τους στο string ancestors χωρισμένα με κόμμα
         if self.current_clicked.oldest_ancestors:
             for i, ancestor in enumerate(self.current_clicked.oldest_ancestors):
                 if i != len(self.current_clicked.oldest_ancestors) - 1:
                     ancestors += ancestor.name + ", "
                 else:
                     ancestors += ancestor.name
+        # δημιουργία πεδίων "Παλαιότεροι πρόγονοι" και "Γονείς", εφόσον υπάρχουν
         if ancestors:
             label_ancestor = ctk.CTkLabel(popup, text="Παλαιότεροι πρόγονοι: " + ancestors, font=("Arial", fontsize))
             label_ancestor.pack()
-
+        if parents:
+            label_parents = ctk.CTkLabel(popup, text="Γονείς: " + parents, font=("Arial", fontsize))
+            label_parents.pack()
         close_button = ctk.CTkButton(popup, text="Κλείσιμο", command=popup.destroy)
         close_button.pack()
 
