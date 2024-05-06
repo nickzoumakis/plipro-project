@@ -12,6 +12,8 @@ class Person:
         self.id = id
         self.name = name
         self.gender = None
+        self.dob = None
+        self.dod = None
         self.children = []
         self.parents = []
         self.siblings = []
@@ -32,7 +34,9 @@ class Graph:
         self.depths = []
         self.youngest_descendants = []
         self.path = False
-
+        # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου
+        # ! NON FUNCTIONAL
+        self.node_coordinates = {}
         # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
 
         # εαν δόθηκε file path από το main app, ενημέρωση της self.path για έλεγχο από τη load_data
@@ -63,13 +67,13 @@ class Graph:
             self.ancestors.clear()
         
         #debug print for ancestors
-        for person in self.all_people:
+        """for person in self.all_people:
             if person.oldest_ancestors:
                 print(f'{person.name}, oldest ancestors:')
                 for ancestor in person.oldest_ancestors:
                     print(f'{ancestor.name}')
                 print("===============")
-        print("====END====")
+        print("====END====")"""
         # ταξινόμηση ανα γενιά και ανα σύζυγο
         self.sorted_all = sorted(self.all_people, key=lambda person:person.generation)
 
@@ -92,6 +96,8 @@ class Graph:
             if id not in existing:
                 current = Person(id, f"{data[id]['name']} {data[id]['surname']}")
                 current.gender = data[id]['gender']
+                current.dob = data[id]['date_of_birth']
+                current.dod = data[id]['date_of_death']
             else:
                 # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
                 all = current.all
@@ -262,8 +268,6 @@ class Graph:
                          node_attr={'shape':"box",  'penwidth':'2.0', 'fontsize':"20"})
         # κλήση draw με τη sorted_all λίστα
         self.draw(graph, self.sorted_all, self.max_depth, img_filepath)
-        # άδειασμα της λίστας ατόμων για την επόμενη επανάληψη σχεδιασμού -> αν δε γίνει clear οι ακμές επανασχεδιάζονται πάνω στις προηγούμενες
-        self.all_people.clear()
 
 
     """draw: σχεδιάζει το δέντρο σε επίπεδα γενεών ξεκινώντας από το παλιότερο, διάφορες παράμετροι εδώ έχουν
@@ -307,7 +311,7 @@ class Graph:
                         # κόμβοι
                         with graph.subgraph() as s:
                             s.attr(rank='same')
-                            s.node(point, shape="point")
+                            s.node(point, shape="circle", label="", height="0.01")
                             s.node(link_left, shape="circle", label="", height='0.01')
                             s.node(link_right, shape="circle", label="", height='0.01')
                         # ακμές
@@ -380,6 +384,21 @@ class Graph:
         #graph.write("tree.dot")
         graph.render(directory = img_filepath)
 
+
+    """Methods για επικοινωνία με το MainApp"""
+    """επιστρέφει τις συντεταγμένες κάθε κόμβου όταν κληθεί"""
+    def send_coordinates(self):
+        return self.node_coordinates
+
+
+    """επιστρέφει τη λίστα με όλα τα Person objects"""
+    def send_people(self):
+        return self.all_people
+    
+
+    """καθαρίζει τη λίστα με τα Person objects, πρέπει να καλείται σε κάθε επανασχεδίαση δέντρου, αλλιώς έχουμε edge overlaps"""
+    def delete_people(self):
+        self.all_people.clear()
 
 def main():
     g = Graph()
