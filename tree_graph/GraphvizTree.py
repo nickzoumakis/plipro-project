@@ -295,7 +295,7 @@ class Graph:
             for person in people:
                 if person.generation == current_gen:
                     # δημιουργία γονιών
-                    if person.spouse and person.spouse not in completed_spouse_links:
+                    if person.gender == "male" and person.spouse and person.spouse not in completed_spouse_links:
                         # ανάθεση σημείου ένωσης γάμου
                         person.own_union = p_nodes
                         person.spouse.own_union = p_nodes
