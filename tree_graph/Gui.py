@@ -408,6 +408,8 @@ class MainApp:
         label_name.pack()
         parents = ""
         ancestors = ""
+        date_of_birth = ""
+        date_of_death = ""
         # αν υπάρχουν γονείς, τους προσθέτουμε στο string parents χωρίζοντας με κόμμα
         if current_clicked.parents:
             parents = f"{current_clicked.parents[0].name}, {current_clicked.parents[1].name}"
@@ -418,6 +420,12 @@ class MainApp:
                     ancestors += ancestor.name + ", "
                 else:
                     ancestors += ancestor.name
+        # προσθήκη επιπλέον πληροφοριών (ημερομηνία γέννησης/θανάτου)
+        if current_clicked.dob:
+            date_of_birth = current_clicked.dob
+        if current_clicked.dod:
+            date_of_death = current_clicked.dod
+        
         # δημιουργία πεδίων "Παλαιότεροι πρόγονοι" και "Γονείς", εφόσον υπάρχουν
         if ancestors:
             label_ancestor = ctk.CTkLabel(popup, text="Παλαιότεροι πρόγονοι: " + ancestors, font=("Arial", fontsize))
@@ -425,6 +433,13 @@ class MainApp:
         if parents:
             label_parents = ctk.CTkLabel(popup, text="Γονείς: " + parents, font=("Arial", fontsize))
             label_parents.pack()
+        if date_of_birth:
+            label_dob = ctk.CTkLabel(popup, text="Ημερομηνία Γέννησης: " + date_of_birth, font=("Arial", fontsize))
+            label_dob.pack()
+        if date_of_death:
+            label_dod = ctk.CTkLabel(popup, text="Ημερομηνία Θανάτου: " + date_of_death, font=("Arial", fontsize))
+            label_dod.pack()
+        # κουμπί κλεισίματος παραθύρου
         close_button = ctk.CTkButton(popup, text="Κλείσιμο", command=popup.destroy)
         close_button.pack()
 
