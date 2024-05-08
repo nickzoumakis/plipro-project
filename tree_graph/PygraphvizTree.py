@@ -180,7 +180,7 @@ class Graph:
         for person in set(self.youngest_descendants):     # χρήση set, το descendants έχει πολλές φορές τον κάθε νεότερο απόγονο αφού προσεγγίζονται και από τους 2 γονείς τους
             person.generation = max_depth
 
-        # go up the parent ladder for each person, assigning max gen - 1 
+        # πηγαίνουμε προς τα πάνω από τους νεότερους απογόνους, μειώνοντας τη γενιά κατα 1 κάθε φορά 
         for person in set(self.youngest_descendants):
             for parent in person.parents:
                 self.assign_generations_up(parent, max_depth - 1)
@@ -358,6 +358,7 @@ class Graph:
         graph.draw(filepath)
         # με την εικόνα σχεδιασμένη, προχωράμε στην ανάκτηση των συντεταγμένων των κόμβων
         img = Image.open(filepath)
+        # TODO: resize σε συγκεκριμένο μέγεθος ?
         height = img.height
         for node in graph.nodes():
             # δεν ενδιαφέρουν τα αόρατα nodes
