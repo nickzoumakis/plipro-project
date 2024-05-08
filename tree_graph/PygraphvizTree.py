@@ -17,6 +17,7 @@ class Person:
         self.parents = []
         self.siblings = []
         self.spouse = None
+        self.photo_path = ""
         self.generation = None
         self.own_union = None
         self.oldest_ancestors = None
@@ -97,6 +98,7 @@ class Graph:
                 current.gender = data[id]['gender']
                 current.dob = data[id]['date_of_birth']
                 current.dod = data[id]['date_of_death']
+                current.photo_path = data[id]['photo_path']
             else:
                 # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
                 all = current.all

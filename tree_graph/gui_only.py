@@ -85,7 +85,8 @@ class MainApp:
         self.entry_spouse= ctk.CTkEntry(master=self.app, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
         self.entry_spouse.place(relx=0.11, rely=0.30, anchor="nw")
 
-
+        self.entry_img =  ctk.CTkEntry(master=self.app, placeholder_text= "File path", font=("Arial", 18), text_color="black",fg_color="white",width=210)
+        self.entry_img.place(relx=0.6, rely=0.31, anchor="nw")
 
         # CHECKBOXES για φύλο
         self.checkbox_male = ctk.CTkCheckBox(master=self.app, text="Άντρας", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey", command=lambda:self.uncheck_other("male"))
@@ -125,6 +126,11 @@ class MainApp:
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=2, width=20, height=50)
         self.btn_delete.place(relx=0.95, rely=0.8, anchor="ne")
+
+        self.btn_uploadimg = ctk.CTkButton(master=self.app, text="Μεταφόρτωση φωτογραφίας", corner_radius=32, command=self.upload_img,
+                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
+                            border_width=2, width=15, height=40)
+        self.btn_uploadimg.place(relx=0.45, rely=0.30, anchor="nw")
 
         # treeview
         col_titles = (
@@ -179,19 +185,22 @@ class MainApp:
                     self.entry_father_surname,
                     self.entry_father_id,
                     self.entry_spouse,
-                    self.entry_death]
+                    self.entry_death,
+                    self.entry_img]
         
         keys = ['name',
                 'surname',
                 'date_of_birth',
-                'date_of_death',
+                'id',
                 'mother_name',
                 'mother_surname',
                 'mother_id',
                 'father_name',
                 'father_surname',
                 'father_id',
-                'spouse_id']
+                'spouse_id', 
+                'date_of_death',
+                'photo_path']
         # εύρεση των στοιχείων του ατόμου με βάση το id από το family_data dict και όχι από τα selected items του treeview (δεν περιλαμβάνει κενά πεδία)
         selected_item = self.table.selection()
         # διακοπή της συνάρτησης αν δεν έχει επιλεγεί άτομο ή γίνει διαγραφή του επιλεγμένου
@@ -224,6 +233,7 @@ class MainApp:
         father_surname = self.entry_father_surname.get()    #υποχρεωτικό
         father_id = self.entry_father_id.get()    #υποχρεωτικό
         spouse_id = self.entry_spouse.get()    #προαιρετικό
+        photo_path = self.entry_img.get()   #προαιρετικό
 
         # TODO: αμυντικός ->ΓΙΑΝΝΗΣ
         # προσθήκη στο λεξικό family_data
@@ -240,7 +250,8 @@ class MainApp:
             "father_name": father_name,
             "father_surname": father_surname,
             "father_id": father_id,
-            "spouse_id": spouse_id
+            "spouse_id": spouse_id,
+            "photo_path": photo_path
         }
 
         # για debugging
@@ -276,7 +287,8 @@ class MainApp:
                     self.entry_father_surname,
                     self.entry_father_id,
                     self.entry_spouse,
-                    self.entry_death]:
+                    self.entry_death,
+                    self.entry_img]:
             entry.delete(0, 'end')
         
         # Ξετσεκάρει τα checkboxes
@@ -298,6 +310,24 @@ class MainApp:
         del self.family_data[str(item_id)]  # Αφαίρεση από το family_data
         #debug print
         #print(self.family_data)
+
+
+    def upload_img(self):
+        #  αποδεκτοί τύποι αρχείων εικόνας
+        fileTypes = [("Image files", "*.png;*.jpg;*.jpeg")]
+        path = tk.filedialog.askopenfilename(filetypes=fileTypes)
+ 
+        # αν επιλέχθηκε φωτογραφία, προσθέτουμε το path στο αντίστοιχο entry για ανάκτηση μετά
+        if path:
+            # καθάρισμα του πεδίου entry_img αν δεν είναι άδειο
+            self.entry_img.delete(0, 'end')
+            self.entry_img.insert(0, path)
+    
+        # if no file is selected, then we are displaying below message
+        else:
+            print("No file chosen.")
+            return
+
 
 
     """run: Υλοποιεί και εμφανίζει το παράθυρο της εφαρμογής"""
