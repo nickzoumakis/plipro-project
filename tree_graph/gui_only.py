@@ -209,23 +209,25 @@ class MainApp:
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     # TODO: λείπει αμυντικός προγραμματισμός εδώ ->ΓΙΑΝΝΗΣ
     def add_person(self):
+        #TODO: να μη μπορεί να προστεθεί κενό άτομο (χωρίς τα υποχρεωτικά τουλάχιστον πεδία->εμφάνιση Popup ?)
         # παίρνω από τις φόρμες όλα τα στοιχεία που έχει βάλει ο χρήστης
-        id = self.entry_id.get()
-        name = self.entry_name.get()
-        surname = self.entry_surname.get()
-        dob = self.entry_date.get()
-        gender = self.checkbox_male.get()
-        dod = self.entry_death.get()
-        mother_name = self.entry_mother_name.get()
-        mother_surname = self.entry_mother_surname.get()
-        mother_id = self.entry_mother_id.get()
-        father_name = self.entry_father_name.get()
-        father_surname = self.entry_father_surname.get()
-        father_id = self.entry_father_id.get()
-        spouse_id = self.entry_spouse.get()
+        id = self.entry_id.get()    #υποχρεωτικό
+        name = self.entry_name.get()    #υποχρεωτικό
+        surname = self.entry_surname.get()    #υποχρεωτικό
+        dob = self.entry_date.get()    #προαιρετικό
+        gender = self.checkbox_male.get()    #υποχρεωτικό
+        dod = self.entry_death.get()    #προαιρετικό
+        mother_name = self.entry_mother_name.get()      #υποχρεωτικό
+        mother_surname = self.entry_mother_surname.get()        #υποχρεωτικό
+        mother_id = self.entry_mother_id.get()      #υποχρεωτικό
+        father_name = self.entry_father_name.get()      #υποχρεωτικό
+        father_surname = self.entry_father_surname.get()    #υποχρεωτικό
+        father_id = self.entry_father_id.get()    #υποχρεωτικό
+        spouse_id = self.entry_spouse.get()    #προαιρετικό
 
-        # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph->ΓΙΑΝΝΗΣ
+        # TODO: αμυντικός ->ΓΙΑΝΝΗΣ
         # προσθήκη στο λεξικό family_data
+        # να μην προστίθεται αν το ID υπάρχει ήδη
         self.family_data[id] = {
             "name": name,
             "surname": surname,
