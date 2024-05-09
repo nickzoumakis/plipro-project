@@ -15,10 +15,14 @@ class MainApp:
     def __init__(self):
         # TODO: να ελέγχεται ο φάκελος data στο parent directory και αν περιέχει Json αρχεία να εμφανίζεται παράθυρο που θα ζητάει από το χρήστη αν θέλει να ανοίξει κάποιο από αυτά ή να φτιάξει νέο δέντρο
         #^^ σε αυτήν την περίπτωση, αν επιλέξει json , το self.family_data δε θα είναι κενό dict αλλά path στο json και η Graph θα κληθεί με την παράμετρο is_path=True
-        # TODO: την πρώτη φορά και κάθε φορά που θα διαλέγει να φτιάξει νέο δέντρο, να ζητείται όνομα για το αρχείο (για την ονοματοδοσία και της εικόνας του γραφήματος και του json)
-        
+        # βρίσκουμε αν υπάρχουν json αρχεία στο φάκελο data
+        data_path = Path.cwd().parent / 'data'
+        json_files = [file for file in data_path.glob("*.json")]
+        # κενό αρχικά string για το όνομα των αρχείων που θα αποθηκευτούν
+        self.file_name = ""
         # αρχικοποίηση κενού dict που θα φιλοξενήσει όλα τα στοιχεία των ατόμων που προσθέτει ο χρήστης
         self.family_data = {}
+
         # αρχικοποίηση dict συντεταγμένων κόμβων
         self.coordinates = {}
         # κενή αρχικά λίστα με όλα τα Person objects που θα δημιουργηθούν από το Tree class
@@ -170,7 +174,77 @@ class MainApp:
         # add event: όταν ο χρήστης κάνει κλικ σε κάποιο άτομο στο treeview, τα στοιχεία του να εμφανίζονται στις φόρμες του παραθύρου        
         # η lambda εδώ είναι απαραίτητη, το bind επιστρέφει event από μόνο του ως argument, τη χρησιμοποιούμε για να το απορροφήσουμε και να καλέσουμε τη συνάρτηση που ενδιαφέρει πραγματικά(show items) 
         self.table.bind('<<TreeviewSelect>>', lambda _event:self.show_items())
-    
+
+        # TODO: την πρώτη φορά και κάθε φορά που θα διαλέγει να φτιάξει νέο δέντρο, να ζητείται όνομα για το αρχείο (για την ονοματοδοσία και της εικόνας του γραφήματος και του json)
+        self.choose_file(json_files)
+
+
+    # Συνάρτηση για να επιλέξω αρχείο από το cur dir από ένα `Listbox`
+    def choose_file(self, json_files):
+        popup = tk.Toplevel(master=self.app)
+        popup.attributes("-topmost", True)
+        popup.title("Menu Επιλογής")
+        # Ορίζω το μέγεθος του παραθύρου
+        width = 400  # Πλάτος σε pixels
+        height = 400  # Ύψος σε pixels
+
+        # Υπολογισμός για κεντράρισμα
+        screen_width = popup.winfo_screenwidth()
+        screen_height = popup.winfo_screenheight()
+
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2)
+
+        # κεντράρισμα
+        popup.geometry(f"{width}x{height}+{x}+{y}")
+
+        # Δημιουργία στυλ και προσθήκη ετικέτας
+        style = ttk.Style()
+        style.configure("Custom.TLabel", font=("Arial", 14), foreground="black", background="light blue")
+
+        label = ttk.Label(popup, text="Επιλογή αρχείου ή δημιουργία νέου", style="Custom.TLabel")
+        label.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)  # Προσθέτω padding για περισσότερο χώρο
+
+        # Προσθέτω ενα Listbox για να επιλέξει ο χρηστης αρχείο για άνοιγμα
+        listbox = tk.Listbox(popup, selectmode=tk.SINGLE, font=("Arial", 14))
+        for file in json_files:
+            listbox.insert(tk.END, file)
+
+        # Προσθέτω και την επιλογή "Δημιουργία νέου αρχείου"
+        listbox.insert(tk.END, "Δημιουργία νέου αρχείου")
+
+        listbox.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)  # Προσθέτω περισσότερο padding
+        
+        # Συνάρτηση για το κουμπί "OK"
+        def on_ok():
+            selected = listbox.curselection()
+
+            if selected:
+                selected_item = listbox.get(selected[0])
+
+                if selected_item == "Δημιουργία νέου αρχείου":
+                    new_file_name = simpledialog.askstring(
+                        "Create New File",
+                        "Δώστε όνομα για νέο αρχείο:"
+                    )
+                    if new_file_name:
+                        self.file_name = new_file_name
+
+                else:
+                # Χρησιμοποιώ τον τρέχοντα κατάλογο για την επιλογή του υπάρχοντος αρχείου
+                    self.file_name = selected_item
+
+                popup.destroy() #Κλείσιμο popup
+
+            else:
+                print("No file selected")
+            
+        button_ok = tk.Button(popup, text="OK", command=on_ok)
+        button_ok.pack(padx=5, pady=5)
+
+        # Περιμένω για το κλείσιμο του παραθύρου"""
+        popup.focus()
+        popup.wait_window()
 
     """απενεργοποιεί το ένα checkbox φύλου εφόσον επιλέγεται το άλλο"""
     def uncheck_other(self, enabled):
@@ -328,7 +402,7 @@ class MainApp:
     """create_tree: Αποθήκευση γενεαλογικών δεδομένων στο δίσκο. 
     Καλεί το Graph class (απο το module GraphvizTree) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
-        # ονοματοδοσία json και γραφήματος με βάση το πρώτο όνομα που εισήγαγε ο χρήστης στο family_data
+        # TODO:ΧΡΕΑΙΖΕΤΑΙ UPDATE ονοματοδοσία json και γραφήματος με βάση το string που εισήγαγε ο χρήστης στο popup
         for i, key in enumerate(self.family_data.keys()):
             if i == 0:
                 json_filename = f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}.json"
@@ -492,7 +566,6 @@ class MainApp:
     def run(self):
         self.table.pack(fill='both', expand=True)
         self.app.mainloop()
-
 
 """Συνάρτηση main"""
 def main():
