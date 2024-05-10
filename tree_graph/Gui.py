@@ -279,7 +279,7 @@ class MainApp(ctk.CTk):
             else:
                 entry.insert(0, self.family_data[selected_id][key])
         # ενημέρωση του κουτιού για το φύλο
-        if self.family_data[selected_id]['gender'] == '1':
+        if self.family_data[selected_id]['gender'] == 'female':
             self.checkbox_female.select()
         else:
             self.checkbox_male.select()

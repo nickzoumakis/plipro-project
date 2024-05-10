@@ -228,7 +228,7 @@ class Graph:
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
     def show(self, filename, filepath):
         # αρχικοποιίηση του γραφήματος
-        graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
+        graph = pgv.AGraph(splines="curves", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
         # κλήση draw με τη sorted_all λίστα
@@ -284,7 +284,7 @@ class Graph:
                         graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[0] if is_red else marriage_colors[1])         
+                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[0] if is_red else marriage_colors[1], weight="10")         
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
@@ -305,7 +305,7 @@ class Graph:
                             sib = "sib" + str(sib_nodes)
                             graph.add_node(sib, shape="circle", label="", height=0.01)
                             graph.add_edge(parent_union, sib, color="blue")
-                            graph.add_edge(sib, id, color="blue")
+                            graph.add_edge(sib, id, color="blue", weight="10")
                             sib_nodes += 1
                         # αν υπάρχουν αδέρφια
                         else:
@@ -333,12 +333,12 @@ class Graph:
                                 bridge = inv_nodes.pop(total // 2)
                             # ένωση των κόμβων με κάθε αδερφό
                             for link, sibling in zip(inv_nodes, all):
-                                graph.add_edge(link, sibling, color="blue")
+                                graph.add_edge(link, sibling, color="blue", weight="10")
                             # ένωση δομής με γονείς
                             if even:
-                                graph.add_edge(parent_union, bridge, color="blue")
+                                graph.add_edge(parent_union, bridge, color="blue", weight="10")
                             else:
-                                graph.add_edge(parent_union, inv_nodes[len(inv_nodes) // 2], color="blue")
+                                graph.add_edge(parent_union, inv_nodes[len(inv_nodes) // 2], color="blue", weight="10")
                             # εξαίρεση αδερφιών από μελλοντικές συνδέσεις
                             for sibling in person.siblings:
                                 completed_sibling_links.append(sibling)
