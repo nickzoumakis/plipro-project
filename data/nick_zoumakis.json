@@ -28,5 +28,35 @@
         "father_id": "3",
         "spouse_id": "",
         "photo_path": "/home/nick/projects/plipro-project/test_photos/female.jpg"
+    },
+    "2": {
+        "name": "valia",
+        "surname": "serdaki",
+        "date_of_birth": "",
+        "gender": "female",
+        "date_of_death": "",
+        "mother_name": "katerina",
+        "mother_surname": "giatromanwlaki",
+        "mother_id": "5",
+        "father_name": "nikos",
+        "father_surname": "serdakis",
+        "father_id": "6",
+        "spouse_id": "",
+        "photo_path": ""
+    },
+    "3": {
+        "name": "george",
+        "surname": "zoumakis",
+        "date_of_birth": "",
+        "gender": "male",
+        "date_of_death": "",
+        "mother_name": "thalia",
+        "mother_surname": "kikaki",
+        "mother_id": "7",
+        "father_name": "nikos",
+        "father_surname": "zoumakis",
+        "father_id": "8",
+        "spouse_id": "",
+        "photo_path": ""
     }
 }

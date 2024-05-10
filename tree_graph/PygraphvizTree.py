@@ -286,6 +286,20 @@ class Graph:
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
                         graph.add_edges_from([(spouse_id, link_right), (id, link_left)], color=marriage_colors[0] if is_red else marriage_colors[1])
+                        graph.layout(prog="dot")
+                        #TODO: close but not there yet, also check relative position of id and spouse_id nodes!
+                        dist_id_link_left = abs(float(graph.get_node(id).attr['pos'].split(',')[0]) - float(graph.get_node(link_left).attr['pos'].split(',')[0]))
+                        dist_id_link_right = abs( float(graph.get_node(id).attr['pos'].split(',')[0]) - float(graph.get_node(link_right).attr['pos'].split(',')[0]))
+                        dist_spouseid_link_left =  abs(float(graph.get_node(spouse_id).attr['pos'].split(',')[0]) - float(graph.get_node(link_left).attr['pos'].split(',')[0]))
+                        dist_spouseid_link_right = abs(float(graph.get_node(spouse_id).attr['pos'].split(',')[0]) - float(graph.get_node(link_right).attr['pos'].split(',')[0]))
+                        if person.gender == "female":
+                            if  dist_id_link_left < dist_id_link_right:
+                                graph.add_edges_from([(spouse_id, link_left), (id, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
+                                graph.remove_edges_from([(spouse_id, link_right), (id, link_left)])
+                        else:
+                            if  dist_spouseid_link_left > dist_spouseid_link_right:
+                                graph.add_edges_from([(spouse_id, link_left), (id, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
+                                graph.remove_edges_from([(spouse_id, link_right), (id, link_left)])
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
