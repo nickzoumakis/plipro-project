@@ -29,7 +29,7 @@ class Person:
 class Graph:
     """init παίρνει το family_data, ανάλογα με την παράμετρο is_path που δόθηκε από το MainApp αναγνωρίζει 
     εάν πρόκειται για αρχείο json υπάρχοντος ή dict νέου γενεαλογικού δέντρου"""
-    def __init__(self, family_data, is_path=False):
+    def __init__(self, family_data):
         # depths και youngest_descendants είναι global και χρησιμοποιούνται για να αποθηκεύουν τις τιμές των αναδρομικών συναρτήσεων διατηρώντας σταθερό το περιεχόμενό τους 
         self.depths = []
         self.youngest_descendants = []
@@ -37,11 +37,7 @@ class Graph:
         # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου
         self.node_coordinates = {}
 
-        # TODO: ανάκτηση από json ΚΑΙ εδώ ΚΑΙ στο GUI OOP -> με παράθυρο στο χρήστη ?
-
-        # εαν δόθηκε file path από το main app, ενημέρωση της self.path για έλεγχο από τη load_data
-        if is_path:
-            self.path = True
+        # φόρτωση δεδομένων μέσω της load_data
         self.all_people = self.load_data(family_data)
 
         # χρήση της traverse_down για την εύρεση όλων των πιθανών διαδρομών αναδρομικά από κάθε άτομο στα παιδιά του   
@@ -80,13 +76,8 @@ class Graph:
 
     """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
     def load_data(self, family_data):
-        # αν δόθηκε path σε json, φορτώνει τα περιεχόμενα του αρχείου
-        if self.path:
-            with open(family_data) as input_file:
-                data = load(input_file)
-        else:
-            # διαφορετικά, φορτώνει απευθείας το dict των νέων γενεαλογικών δεδομένων στο data
-            data = family_data
+        # φορτώνει απευθείας το dict των νέων γενεαλογικών δεδομένων από το MainApp στο data
+        data = family_data
         
         # pass 1: Δημιουργία Person αντικειμένων
         existing = []
@@ -273,7 +264,7 @@ class Graph:
             for person in people:
                 if person.generation == current_gen:
                     # δημιουργία γονιών
-                    if person.gender == "male" and person.spouse and person.spouse not in completed_spouse_links:
+                    if person.spouse and person.spouse not in completed_spouse_links:
                         # ανάθεση σημείου ένωσης γάμου
                         person.own_union = p_nodes
                         person.spouse.own_union = p_nodes
