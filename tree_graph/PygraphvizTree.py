@@ -71,8 +71,7 @@ class Graph:
         print("====END====")"""
                 
         # ταξινόμηση ανα γενιά
-        self.sorted_all = sorted(self.all_people, key=lambda person:person.gender, reverse=True)
-
+        self.sorted_all = self.all_people
 
     """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
     def load_data(self, family_data):
@@ -285,21 +284,7 @@ class Graph:
                         graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.add_edges_from([(spouse_id, link_right), (id, link_left)], color=marriage_colors[0] if is_red else marriage_colors[1])
-                        graph.layout(prog="dot")
-                        #TODO: close but not there yet, also check relative position of id and spouse_id nodes!
-                        dist_id_link_left = abs(float(graph.get_node(id).attr['pos'].split(',')[0]) - float(graph.get_node(link_left).attr['pos'].split(',')[0]))
-                        dist_id_link_right = abs( float(graph.get_node(id).attr['pos'].split(',')[0]) - float(graph.get_node(link_right).attr['pos'].split(',')[0]))
-                        dist_spouseid_link_left =  abs(float(graph.get_node(spouse_id).attr['pos'].split(',')[0]) - float(graph.get_node(link_left).attr['pos'].split(',')[0]))
-                        dist_spouseid_link_right = abs(float(graph.get_node(spouse_id).attr['pos'].split(',')[0]) - float(graph.get_node(link_right).attr['pos'].split(',')[0]))
-                        if person.gender == "female":
-                            if  dist_id_link_left < dist_id_link_right:
-                                graph.add_edges_from([(spouse_id, link_left), (id, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
-                                graph.remove_edges_from([(spouse_id, link_right), (id, link_left)])
-                        else:
-                            if  dist_spouseid_link_left > dist_spouseid_link_right:
-                                graph.add_edges_from([(spouse_id, link_left), (id, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
-                                graph.remove_edges_from([(spouse_id, link_right), (id, link_left)])
+                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[0] if is_red else marriage_colors[1])         
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
@@ -357,10 +342,41 @@ class Graph:
                             # εξαίρεση αδερφιών από μελλοντικές συνδέσεις
                             for sibling in person.siblings:
                                 completed_sibling_links.append(sibling)
-
+                        #graph.layout(prog="dot")
+                        #graph.draw(filepath)
+                        
+            graph.layout(prog="dot")
+            graph.draw(filepath)
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
 
+        # edge cross check
+        # edge crossing check
+        for person in people:
+        # get current node and spouse if it exists only if spouse exists, otherwise no edge crossings
+            if person.spouse and not person.siblings:
+                current = graph.get_node(person.id)
+                current_spouse = graph.get_node(person.spouse.id)
+                # find link edges for current and spouse
+                for node in (current, current_spouse):
+                    for edge_tuple in graph.edges(node):
+                        for edge in edge_tuple:
+                            if 'link' in edge and node == current:
+                                current_link = edge
+                            elif 'link' in edge and node == current_spouse:
+                                current_spouse_link = edge
+                #calculate x coordinates of nodes and links
+                x_link_curr = float(graph.get_node(current_link).attr['pos'].split(',')[0])
+                x_link_curr_spouse = float(graph.get_node(current_spouse_link).attr['pos'].split(',')[0])
+                x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
+                x_curr_spouse = float(graph.get_node(current_spouse).attr['pos'].split(',')[0])
+                # if the statement is true, the edges have crossed and need reversal
+                if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
+                    # remove existing
+                    graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
+                    # add correct edges
+                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=marriage_colors[1] if is_red else marriage_colors[0])
+                    
         graph.layout(prog="dot")
         graph.draw(filepath)
         # με την εικόνα σχεδιασμένη, προχωράμε στην ανάκτηση των συντεταγμένων των κόμβων
