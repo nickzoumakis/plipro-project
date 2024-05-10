@@ -14,8 +14,6 @@ import json
 class MainApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        # TODO: να ελέγχεται ο φάκελος data στο parent directory και αν περιέχει Json αρχεία να εμφανίζεται παράθυρο που θα ζητάει από το χρήστη αν θέλει να ανοίξει κάποιο από αυτά ή να φτιάξει νέο δέντρο
-        #^^ σε αυτήν την περίπτωση, αν επιλέξει json , το self.family_data δε θα είναι κενό dict αλλά path στο json και η Graph θα κληθεί με την παράμετρο is_path=True
         # κρύβουμε προσωρινά το main παράθυρο
         self.withdraw()
 
@@ -23,8 +21,9 @@ class MainApp(ctk.CTk):
         self.startup = Startup_Popup(self)
         # Περιμένω για το κλείσιμο του παραθύρου
         self.startup.wait_window()
+
         # πέρασμα του αρχείου που επέλεξε ο χρήστης στην file_name 
-        self.file_name = self.startup.send_filename()
+        self.files = self.startup.get_files()
 
         # επανεμφάνιση του main app παραθύρου
         self.deiconify()
@@ -183,14 +182,43 @@ class MainApp(ctk.CTk):
         # η lambda εδώ είναι απαραίτητη, το bind επιστρέφει event από μόνο του ως argument, τη χρησιμοποιούμε για να το απορροφήσουμε και να καλέσουμε τη συνάρτηση που ενδιαφέρει πραγματικά(show items) 
         self.table.bind('<<TreeviewSelect>>', lambda _event:self.show_items())
         self.table.pack(fill='both', expand=True)
+
         # αν στο popup o χρήστης επέλεξε υπάρχον json, ενημερώνουμε το family_data και εμφανίζουμε τα στοιχεία των ατόμων στο treeview
         if not self.startup.is_new_file:
-            # φόρτωση json
-            with open(self.file_name) as input_json:
-                self.family_data = json.load(input_json)
-            # TODO:εμφάνιση στο treeview
-            print(self.family_data)
-    
+            self.load_existing(self.files['json_path'])
+
+
+    """φορτώνει dict από το json που διάλεξε ο χρήστης και εμφανίζει τα περιεχόμενά του στο treeview"""
+    def load_existing(self, file):  
+        # φόρτωση json
+        with open(file) as input_json:
+            self.family_data = json.load(input_json)
+
+        # Προσθέτει το νέο άτομο στο treeview-gui table
+        for id, person_info in self.family_data.items():
+            # παίρνουμε τα στοιχεία που ενδιαφέρουν για το treeview μέσω της get με default τιμή άδειο string αν δεν έχουν δοθεί από το χρήστη
+            person_id = id
+            name = person_info.get("name", "")
+            surname = person_info.get("surname", "")
+            mother_name = person_info.get("mother_name", "")
+            mother_surname = person_info.get("mother_surname", "")
+            mother_id = person_info.get("mother_id", "")
+            father_name = person_info.get("father_name", "")
+            father_surname = person_info.get("father_surname", "")
+            father_id = person_info.get("father_id", "")
+            # εισαγωγή στο treeview
+            self.table.insert('', 'end', values=(
+                person_id, 
+                name, 
+                surname, 
+                mother_name, 
+                mother_surname, 
+                mother_id,
+                father_name,
+                father_surname, 
+                father_id)
+                ) 
+            
 
     """απενεργοποιεί το ένα checkbox φύλου εφόσον επιλέγεται το άλλο"""
     def uncheck_other(self, enabled):
@@ -209,6 +237,7 @@ class MainApp(ctk.CTk):
     def show_items(self):
         # καθάρισμα αρχικά των πεδίων
         self.clear_fields()
+
         entries = [self.entry_name,
             self.entry_surname,
             self.entry_date,
@@ -243,13 +272,18 @@ class MainApp(ctk.CTk):
             return
         #TODO: να τσεκάρει αυτόματα και το σωστό κουτάκι φύλου
         selected_id = str(self.table.item(selected_item)['values'][0])
-        for i, (entry, key) in enumerate(zip(entries, keys)):
-            if  i == 3:
+        for entry, key in zip(entries, keys):
+            if  entry == self.entry_id:
                 # 3o στοιχείο το ID του ατομου, το παίρνουμε κατευθείαν από το selected_id αφού στο dict δεν υπάρχει μέσα στα keys
                 entry.insert(0, selected_id)
             else:
                 entry.insert(0, self.family_data[selected_id][key])
-    
+        # ενημέρωση του κουτιού για το φύλο
+        if self.family_data[selected_id]['gender'] == '1':
+            self.checkbox_female.select()
+        else:
+            self.checkbox_male.select()
+
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
@@ -349,17 +383,14 @@ class MainApp(ctk.CTk):
     """create_tree: Αποθήκευση γενεαλογικών δεδομένων στο δίσκο. 
     Καλεί το Graph class (απο το module GraphvizTree) και σχεδιάζει εικόνα του δέντρου"""
     def create_tree(self):
-        # TODO:ΧΡΕΑΙΖΕΤΑΙ UPDATE ονοματοδοσία json και γραφήματος με βάση το string που εισήγαγε ο χρήστης στο popup
-        for i, key in enumerate(self.family_data.keys()):
-            if i == 0:
-                json_filename = f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}.json"
-                # img_filename χωρίς επέκταση αφού στην show της Graph δίνεται σε άλλο όρισμα (format='png')
-                img_filename =  f"{self.family_data[key]['name']}_{self.family_data[key]['surname']}"
-        data_file_path = Path.cwd().parent / 'data' / json_filename
-        img_file_path = Path.cwd().parent / 'graph'
+        # ανάκτηση των paths και filenames από το files dict
+        json_filepath = self.files['json_path']
+        # img_filename χωρίς επέκταση αφού στην show της Graph δίνεται σε άλλο όρισμα (format='png')
+        img_filename =  self.files['filename']
+        img_file_path = self.files['img_path']
 
         # dump json στο φάκελο data
-        with open(data_file_path, "w") as file:
+        with open(json_filepath, "w") as file:
             json.dump(self.family_data, file, indent=4)
 
         # δημιουργία γραφήματος και αποθήκευση rendered εικόνας
@@ -508,13 +539,15 @@ class MainApp(ctk.CTk):
             print("No file chosen.")
             return
 
-"""Κλάση Popup: Υλοποιεί το εισαγωγικό παράθυρο επιλογής υπάρχοντος json ή δημηιοργίας νέου
+"""Κλάση Popup: Υλοποιεί το εισαγωγικό παράθυρο επιλογής υπάρχοντος json ή δημηιουργίας νέου.ge
     είναι subclass του MainApp, κατηγορίας Toplevel"""
 class Startup_Popup(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
         # η παράμετρος is_new_file ενημερώνεται αν ο χρήστης επέλεξε δημιουργία νέου αρχείου
         self.is_new_file = False
+        # το dict files ενημερώνεται με τα ονόματα και τα paths των σχετικών αρχείων json και png και επιστρέφεται στο MainApp
+        self.files = {}
         # Συνάρτηση για να επιλέξω αρχείο από το cur dir από ένα `Listbox`
         self.title("Menu Επιλογής")
         # Ορίζω το μέγεθος του παραθύρου
@@ -564,13 +597,22 @@ class Startup_Popup(ctk.CTkToplevel):
                         "Δώστε όνομα για νέο αρχείο:"
                     )
                     if new_file_name:
-                        full_filename = new_file_name + '.json'
-                        self.file_name = data_path / full_filename
+                        self.files['filename'] = new_file_name
+                        json_filename = new_file_name + '.json'
+                        self.files['json_path'] = data_path / json_filename
+                        self.files['img_path'] = Path.cwd().parent / 'graph' 
                         self.is_new_file = True
 
                 else:
                 # Χρησιμοποιώ τον τρέχοντα κατάλογο για την επιλογή του υπάρχοντος αρχείου
-                    self.file_name = selected_item
+                    existing_filepath = selected_item
+                    # για τη συμπλήρωση του files dict, ανακτώ τα στοιχεία που χρειάζομαι
+                    string_filepath = str(existing_filepath).split('/')
+                    filename = string_filepath[len(string_filepath) - 1]
+                    self.files['filename'] = filename.replace('.json', '')
+                    self.files['json_path'] = existing_filepath
+                    self.files['img_path'] = Path.cwd().parent / 'graph'
+
 
                 self.destroy() #Κλείσιμο self
 
@@ -587,9 +629,9 @@ class Startup_Popup(ctk.CTkToplevel):
             return True
         return False
     
-
-    def send_filename(self):
-        return self.file_name
+    # επιστρέφει στο MainApp το dict με τα ονόματα και τα paths των αρχείων 
+    def get_files(self):
+        return self.files
     
 
 """Συνάρτηση main"""
