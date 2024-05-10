@@ -346,7 +346,7 @@ class Graph:
                         #graph.draw(filepath)
                         
             graph.layout(prog="dot")
-            graph.draw(filepath)
+            #graph.draw(filepath)
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
 
@@ -354,7 +354,7 @@ class Graph:
         # edge crossing check
         for person in people:
         # get current node and spouse if it exists only if spouse exists, otherwise no edge crossings
-            if person.spouse and not person.siblings:
+            if person.spouse:
                 current = graph.get_node(person.id)
                 current_spouse = graph.get_node(person.spouse.id)
                 # find link edges for current and spouse
@@ -363,6 +363,8 @@ class Graph:
                         for edge in edge_tuple:
                             if 'link' in edge and node == current:
                                 current_link = edge
+                                # get edge color
+                                color = graph.get_edge(*edge_tuple).attr['color']
                             elif 'link' in edge and node == current_spouse:
                                 current_spouse_link = edge
                 #calculate x coordinates of nodes and links
@@ -375,7 +377,7 @@ class Graph:
                     # remove existing
                     graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
                     # add correct edges
-                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=marriage_colors[1] if is_red else marriage_colors[0])
+                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
                     
         graph.layout(prog="dot")
         graph.draw(filepath)
