@@ -135,20 +135,15 @@ class MainApp(ctk.CTk):
                             border_width=2, width=20, height=50)
         self.btn_clear.place (relx=0.45, rely=0.8, anchor="ne")
 
-        self.btn_search = ctk.CTkButton(master=self, text="Aναζήτηση ατόμου", corner_radius=32, #command=search_person,
+        self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων ατόμου", corner_radius=32, command=self.update_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=2, width=20, height=50)
-        self.btn_search.place(relx=0.6, rely=0.8, anchor="ne")
-
-        self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων ατόμου", corner_radius=32, #command=update_person,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
-        self.btn_update.place(relx=0.80, rely=0.8, anchor="ne")
+        self.btn_update.place(relx=0.60, rely=0.8, anchor="ne")
 
         self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32, command=self.delete_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=2, width=20, height=50)
-        self.btn_delete.place(relx=0.95, rely=0.8, anchor="ne")
+        self.btn_delete.place(relx=0.80, rely=0.8, anchor="ne")
 
         self.btn_uploadimg = ctk.CTkButton(master=self, text="Μεταφόρτωση φωτογραφίας", corner_radius=32, command=self.upload_img,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
@@ -286,6 +281,7 @@ class MainApp(ctk.CTk):
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
+        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
         # για κάθε στοιχείο που εισήγαγε ο χρήστης
@@ -363,6 +359,60 @@ class MainApp(ctk.CTk):
             checkbox.deselect()
 
 
+    def update_person(self):
+        # Παίρνω το ID του ατόμου που θα ενημερώσω και όλα τα στοιχεία απο τις φόρμες
+        #print(type(self.entry_id.get()))
+        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
+        person_id = self.entry_id.get()
+        name = self.entry_name.get()
+        surname = self.entry_surname.get()
+        dob = self.entry_date.get()
+        gender = self.checkbox_male.get()
+        dod = self.entry_death.get()
+        mother_name = self.entry_mother_name.get()
+        mother_surname = self.entry_mother_surname.get()
+        mother_id = self.entry_mother_id.get()
+        father_name = self.entry_father_name.get()
+        father_surname = self.entry_father_surname.get()
+        father_id = self.entry_father_id.get()
+        spouse_id = self.entry_spouse.get()
+        photo_path = self.entry_img.get()
+
+        # Ενημέρωση των keys του family_data dict για το συγκεκριμένο id
+        try:
+            self.family_data[person_id] = {
+                "name": name,
+                "surname": surname,
+                "date_of_birth": dob,
+                "gender" : 'male' if gender == 1 else 'female',
+                "date_of_death": dod,
+                "mother_name": mother_name,
+                "mother_surname": mother_surname,
+                "mother_id": mother_id,
+                "father_name": father_name,
+                "father_surname": father_surname,
+                "father_id": father_id,
+                "spouse_id": spouse_id,
+                "photo_path": photo_path
+            }
+        except KeyError:
+            print("Invalid ID")
+            return
+
+        # Ενημέρωση του Treeview
+        selected_item = self.table.selection()[0]
+        self.table.item(selected_item, values=(
+                        person_id, 
+                        name, 
+                        surname, 
+                        mother_name, 
+                        mother_surname, 
+                        mother_id,
+                        father_name,
+                        father_surname, 
+                        father_id)
+            ) 
+        
     """διαγράφει άτομο από το treeview και από το family_data"""
     def delete_person(self):
         selected_item = self.table.selection()  # Get the selected item
@@ -524,7 +574,7 @@ class MainApp(ctk.CTk):
 
     def upload_img(self):
         #  αποδεκτοί τύποι αρχείων εικόνας
-        fileTypes = [("Image files", ["*.jpg", "*.jpeg"])]
+        fileTypes = [("Image files", ["*.jpg", "*.jpeg", "*.png"])]
         path = tk.filedialog.askopenfilename(master=self, filetypes=fileTypes)
  
         # αν επιλέχθηκε φωτογραφία, προσθέτουμε το path στο αντίστοιχο entry για ανάκτηση μετά
