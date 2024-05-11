@@ -22,7 +22,7 @@ class MainApp(ctk.CTk):
         # Περιμένω για το κλείσιμο του παραθύρου
         self.startup.wait_window()
 
-        # πέρασμα του αρχείου που επέλεξε ο χρήστης στην file_name 
+        # πέρασμα των στοιχείων του αρχείου που επέλεξε ο χρήστης στην self.files 
         self.files = self.startup.get_files()
 
         # επανεμφάνιση του main app παραθύρου
@@ -270,7 +270,6 @@ class MainApp(ctk.CTk):
         # διακοπή της συνάρτησης αν δεν έχει επιλεγεί άτομο ή γίνει διαγραφή του επιλεγμένου
         if not selected_item:
             return
-        #TODO: να τσεκάρει αυτόματα και το σωστό κουτάκι φύλου
         selected_id = str(self.table.item(selected_item)['values'][0])
         for entry, key in zip(entries, keys):
             if  entry == self.entry_id:
