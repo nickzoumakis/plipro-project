@@ -84,14 +84,15 @@ class Graph:
             # αν δεν υπάρχει το id , δημιουργείται νέο Person
             if id not in existing:
                 current = Person(id, f"{data[id]['name']} {data[id]['surname']}")
-                current.gender = data[id]['gender']
-                current.dob = data[id]['date_of_birth']
-                current.dod = data[id]['date_of_death']
-                current.photo_path = data[id]['photo_path']
             else:
                 # διαφορετικά βρίσκουμε το υπάρχον και το θέτουμε ως current
                 all = current.all
                 current = self.get_person(id, all)
+            # συμπλήρωση δεδομένων από το dict data
+            current.gender = data[id]['gender']
+            current.dob = data[id]['date_of_birth']
+            current.dod = data[id]['date_of_death']
+            current.photo_path = data[id]['photo_path']
             # δημιουργία γονιών
             # TODO: χάνεται το Photo path για τους γονείς
             parent_ids = (data[id]['mother_id'], data[id]['father_id'])

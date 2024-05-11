@@ -135,10 +135,10 @@ class MainApp(ctk.CTk):
                             border_width=2, width=20, height=50)
         self.btn_clear.place (relx=0.45, rely=0.8, anchor="ne")
 
-        self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων ατόμου", corner_radius=32, command=self.update_person,
+        self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων", corner_radius=32, command=self.update_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
                             border_width=2, width=20, height=50)
-        self.btn_update.place(relx=0.60, rely=0.8, anchor="ne")
+        self.btn_update.place(relx=0.63, rely=0.8, anchor="ne")
 
         self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32, command=self.delete_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
@@ -539,7 +539,10 @@ class MainApp(ctk.CTk):
         if current_clicked.oldest_ancestors:
             for i, ancestor in enumerate(current_clicked.oldest_ancestors):
                 if i != len(current_clicked.oldest_ancestors) - 1:
-                    ancestors += ancestor.name + ", "
+                    if i % 2 == 0:
+                        ancestors += ancestor.name + ", "
+                    else:
+                        ancestors += ancestor.name + '\n'
                 else:
                     ancestors += ancestor.name
         # προσθήκη επιπλέον πληροφοριών (ημερομηνία γέννησης/θανάτου)
