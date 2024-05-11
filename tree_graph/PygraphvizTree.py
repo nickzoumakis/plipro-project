@@ -1,6 +1,5 @@
 from pathlib import Path
 import pygraphviz as pgv
-from json import load
 from PIL import Image
 
 """Class Person: Μέλος του γενεαλογικού δέντρου με τις ορισμένες σχέσεις συγγένειας. Το σύνολο των Person() αντικειμένων που έχουν δημιουργηθεί είναι 
