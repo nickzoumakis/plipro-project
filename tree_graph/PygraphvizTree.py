@@ -249,7 +249,7 @@ class Graph:
         current_gen = 0
         node_fill = ["cadetblue1", "lightpink"]
         # 2 χρώματα για κάθε γάμο
-        marriage_colors = ["red", "chartreuse"]
+        marriage_colors = ["red", "blue"]
         for person in people:
             graph.add_node(person.id, label=f"{person.name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
         # για κάθε γενιά
@@ -257,7 +257,7 @@ class Graph:
             # completed links λίστες εξαιρούν αδέρφια και συζύγους για να μη γίνονται πολλαπλές ενώσεις
             completed_spouse_links = []
             completed_sibling_links = []
-            is_red = True
+            color_set = 0
             # για κάθε άτομο 
             for person in people:
                 if person.generation == current_gen:
@@ -280,17 +280,16 @@ class Graph:
                         graph.add_node(link_left, shape="circle", label="", height=0.01)
                         graph.add_node(link_right, shape="circle", label="", height=0.01)
                         # ακμές
-                        graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[0] if is_red else marriage_colors[1])
+                        graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[color_set % 2])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[0] if is_red else marriage_colors[1], weight="10")         
+                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[color_set % 2], weight="10")         
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
                         p_nodes += 1
                         # αλλαγή χρώματος για την επόμενη ένωση
-                        if is_red:
-                            is_red = False
+                        color_set +=1
                     # δημιουργία παιδιών
                     if person.parents and person not in completed_sibling_links:
                         # στοιχεία ατόμου που εξετάζεται
@@ -298,13 +297,16 @@ class Graph:
                         name = person.name
                         # εύρεση σημείου ένωσης γονιών του
                         parent_union = "point" + str(person.parents[0].own_union)
+                        # εύρεση χρώματος σύνδεσης γονιών
+                        for edge_tuple in graph.edges(parent_union):
+                            color = graph.get_edge(*edge_tuple).attr['color']
                         # αν 1 παιδί, ένωση αμέσως
                         if not person.siblings:
                             # δημιουργία node σύνδεσης
                             sib = "sib" + str(sib_nodes)
                             graph.add_node(sib, shape="circle", label="", height=0.01)
-                            graph.add_edge(parent_union, sib, color="blue")
-                            graph.add_edge(sib, id, color="blue", weight="10")
+                            graph.add_edge(parent_union, sib, color=color)
+                            graph.add_edge(sib, id, color=color)
                             sib_nodes += 1
                         # αν υπάρχουν αδέρφια
                         else:
@@ -325,61 +327,32 @@ class Graph:
                                 sib_nodes += 1
                             # σύνδεση κόμβων μεταξύ τους
                             for i in range(total - 1):
-                                graph.add_edge(inv_nodes[i], inv_nodes[i + 1], color="blue")
+                                graph.add_edge(inv_nodes[i], inv_nodes[i + 1], color=color)
                             graph.add_subgraph(inv_nodes, rank="same")
                             if even:
                                 # εξαίρεση μεσαίου στοιχείου από την ένωση αν έχουμε ζυγό πλήθος αδελφών (το μέσον της δομής μένει κενό)
                                 bridge = inv_nodes.pop(total // 2)
                             # ένωση των κόμβων με κάθε αδερφό
                             for link, sibling in zip(inv_nodes, all):
-                                graph.add_edge(link, sibling, color="blue", weight="10")
+                                graph.add_edge(link, sibling, color=color, weight="10")
                             # ένωση δομής με γονείς
                             if even:
-                                graph.add_edge(parent_union, bridge, color="blue", weight="10")
+                                graph.add_edge(parent_union, bridge, color=color, weight="10")
                             else:
-                                graph.add_edge(parent_union, inv_nodes[len(inv_nodes) // 2], color="blue", weight="10")
+                                graph.add_edge(parent_union, inv_nodes[len(inv_nodes) // 2], color=color, weight="10")
                             # εξαίρεση αδερφιών από μελλοντικές συνδέσεις
                             for sibling in person.siblings:
                                 completed_sibling_links.append(sibling)
-                        #graph.layout(prog="dot")
-                        #graph.draw(filepath)
-                        
             graph.layout(prog="dot")
-            #graph.draw(filepath)
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
 
-        # edge cross check
-        # edge crossing check
-        for person in people:
-        # get current node and spouse if it exists only if spouse exists, otherwise no edge crossings
-            if person.spouse:
-                current = graph.get_node(person.id)
-                current_spouse = graph.get_node(person.spouse.id)
-                # find link edges for current and spouse
-                for node in (current, current_spouse):
-                    for edge_tuple in graph.edges(node):
-                        for edge in edge_tuple:
-                            if 'link' in edge and node == current:
-                                current_link = edge
-                                # get edge color
-                                color = graph.get_edge(*edge_tuple).attr['color']
-                            elif 'link' in edge and node == current_spouse:
-                                current_spouse_link = edge
-                #calculate x coordinates of nodes and links
-                x_link_curr = float(graph.get_node(current_link).attr['pos'].split(',')[0])
-                x_link_curr_spouse = float(graph.get_node(current_spouse_link).attr['pos'].split(',')[0])
-                x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
-                x_curr_spouse = float(graph.get_node(current_spouse).attr['pos'].split(',')[0])
-                # if the statement is true, the edges have crossed and need reversal
-                if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
-                    # remove existing
-                    graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
-                    # add correct edges
-                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
-                    
+        # μετά την πρώτη σχεδίαση, κλήση της optimize_edges για διόρθωση κακών διασταυρώσεων
+        self.optimize_edges(graph, people)
+        # τελικό layout και σχεδίαση εικόνας
         graph.layout(prog="dot")
         graph.draw(filepath)
+        
         # με την εικόνα σχεδιασμένη, προχωράμε στην ανάκτηση των συντεταγμένων των κόμβων
         img = Image.open(filepath)
         # TODO: resize σε συγκεκριμένο μέγεθος ?
@@ -390,6 +363,35 @@ class Graph:
                 # αφαιρούμε την y από το ύψος της εικόνας αφού το graphviz μετράει ανάποδα τον άξονα y 
                 self.node_coordinates[node] = (int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[0]))), height -  int(1.33 * (float(graph.get_node(node).attr['pos'].split(',')[1]))))
        
+
+    """ελέγχει την ύπαρξη κακών διασταυρώσεων και τις επιλύνει"""
+    def optimize_edges(self, graph, people):
+        for person in people:
+        # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
+            if person.spouse:
+                current = graph.get_node(person.id)
+                current_spouse = graph.get_node(person.spouse.id)
+                # εύρεση link κόμβου
+                for node in (current, current_spouse):
+                    for edge_tuple in graph.edges(node):
+                        for edge in edge_tuple:
+                            if 'link' in edge and node == current:
+                                current_link = edge
+                                # λήψη του χρώματος
+                                color = graph.get_edge(*edge_tuple).attr['color']
+                            elif 'link' in edge and node == current_spouse:
+                                current_spouse_link = edge
+                # συντεταγμένες x κάθε κόμβου
+                x_link_curr = float(graph.get_node(current_link).attr['pos'].split(',')[0])
+                x_link_curr_spouse = float(graph.get_node(current_spouse_link).attr['pos'].split(',')[0])
+                x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
+                # αν η ανίσωση ισχύει, υπάρχει διασταύρωση των ακμών και γίνεται αντιστροφή τους
+                if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
+                    # διαγραφή υπάρχουσας ένωσης
+                    graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
+                    # προσθήκη σωστών ενώσεων
+                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
+
 
     """Methods για επικοινωνία με το MainApp"""
     """επιστρέφει τις συντεταγμένες κάθε κόμβου όταν κληθεί"""
