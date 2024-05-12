@@ -250,15 +250,15 @@ class Graph:
         current_gen = 0
         node_fill = ["cadetblue1", "lightpink"]
         # 2 χρώματα για κάθε γάμο
-        marriage_colors = ["red", "blue"]
+        marriage_colors = ["red", "blue", "magenta"]
         for person in people:
             graph.add_node(person.id, label=f"{person.name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
         # για κάθε γενιά
+        color_set = 3
         while current_gen <= max_generation:
             # completed links λίστες εξαιρούν αδέρφια και συζύγους για να μη γίνονται πολλαπλές ενώσεις
             completed_spouse_links = []
             completed_sibling_links = []
-            color_set = 0
             # για κάθε άτομο 
             for person in people:
                 if person.generation == current_gen:
@@ -281,16 +281,16 @@ class Graph:
                         graph.add_node(link_left, shape="circle", label="", height=0.01)
                         graph.add_node(link_right, shape="circle", label="", height=0.01)
                         # ακμές
-                        graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[color_set % 2])
+                        graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[color_set % 3])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
                         # σύνδεση link left & link right με κάθε σύζυγο
-                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[color_set % 2], weight="10")         
+                        graph.add_edges_from([(id, link_left),(spouse_id, link_right)],  color=marriage_colors[color_set % 3], weight="10")         
                         # προσθήκη στη λίστα εξαιρέσεων
                         completed_spouse_links.append(person)
                         # αύξηση μετρητή σημείων ένωσης
                         p_nodes += 1
                         # αλλαγή χρώματος για την επόμενη ένωση
-                        color_set +=1
+                        color_set += 1
                     # δημιουργία παιδιών
                     if person.parents and person not in completed_sibling_links:
                         # στοιχεία ατόμου που εξετάζεται
