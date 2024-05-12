@@ -627,6 +627,10 @@ class Startup_Popup(ctk.CTkToplevel):
         listbox = tk.Listbox(self, selectmode=tk.SINGLE, font=("Arial", 14))
         # βρίσκουμε αν υπάρχουν json αρχεία στο φάκελο data
         data_path = Path.cwd().parent / 'data'
+        # έλεγχος ανυπαρξίας του φακέλου data και δημιουργία του
+        if not data_path.exists():
+            data_path.mkdir(parents=True)
+
         json_files = [file for file in data_path.glob("*.json")]
         for file in json_files:
             listbox.insert(tk.END, file)
@@ -665,7 +669,8 @@ class Startup_Popup(ctk.CTkToplevel):
                     self.files['json_path'] = existing_filepath
                     self.files['img_path'] = Path.cwd().parent / 'graph'
 
-
+                if not self.files['img_path'].exists():
+                    self.files['img_path'].mkdir()
                 self.destroy() #Κλείσιμο self
 
             else:

@@ -94,7 +94,6 @@ class Graph:
             current.dod = data[id]['date_of_death']
             current.photo_path = data[id]['photo_path']
             # δημιουργία γονιών
-            # TODO: χάνεται το Photo path για τους γονείς
             parent_ids = (data[id]['mother_id'], data[id]['father_id'])
             parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}", 
                             f"{data[id]['father_name']} {data[id]['father_surname']}")
