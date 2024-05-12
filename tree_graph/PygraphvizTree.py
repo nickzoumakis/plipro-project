@@ -291,6 +291,8 @@ class Graph:
                         p_nodes += 1
                         # αλλαγή χρώματος για την επόμενη ένωση
                         color_set += 1
+                        #graph.layout(prog="dot")
+                        #graph.draw(filepath)
                     # δημιουργία παιδιών
                     if person.parents and person not in completed_sibling_links:
                         # στοιχεία ατόμου που εξετάζεται
@@ -344,6 +346,8 @@ class Graph:
                             # εξαίρεση αδερφιών από μελλοντικές συνδέσεις
                             for sibling in person.siblings:
                                 completed_sibling_links.append(sibling)
+                        #graph.layout(prog="dot")
+                        #graph.draw(filepath)
             graph.layout(prog="dot")
             # προχωράμε στην επόμενη γενιά
             current_gen += 1
