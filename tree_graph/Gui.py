@@ -631,8 +631,14 @@ class Startup_Popup(ctk.CTkToplevel):
         if not data_path.exists():
             data_path.mkdir(parents=True)
 
+        # για διευκόλυνση εμφανίζεται στη λίστα το όνομα κάθε αρχείου μόνο αντί για το πλήρες path
         json_files = [file for file in data_path.glob("*.json")]
-        for file in json_files:
+        filenames = []
+        for path in json_files:
+            string_path = str(path).split('/')
+            filenames.append(string_path[len(string_path) - 1].replace('.json', '')) 
+
+        for file in filenames:
             listbox.insert(tk.END, file)
 
         # Προσθέτω και την επιλογή "Δημιουργία νέου αρχείου"
@@ -660,8 +666,8 @@ class Startup_Popup(ctk.CTkToplevel):
                         self.is_new_file = True
 
                 else:
-                # Χρησιμοποιώ τον τρέχοντα κατάλογο για την επιλογή του υπάρχοντος αρχείου
-                    existing_filepath = selected_item
+                    # Χρησιμοποιώ τον τρέχοντα κατάλογο για την επιλογή του υπάρχοντος αρχείου
+                    existing_filepath = json_files[filenames.index(selected_item)]
                     # για τη συμπλήρωση του files dict, ανακτώ τα στοιχεία που χρειάζομαι
                     string_filepath = str(existing_filepath).split('/')
                     filename = string_filepath[len(string_filepath) - 1]
