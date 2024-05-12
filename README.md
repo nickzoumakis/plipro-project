@@ -35,3 +35,6 @@
 
 - *update 8/5/2024* : Δυνατότητα προσθήκης φωτογραφίας (εμφάνιση και στο popup λεπτομερειών)
 ![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/photo-upload.png)
+
+### Ενδεικτικό παράδειγμα (Simpsons)
+![](https://github.com/nickzoumakis/plipro-project/blob/main/demo/simpsons.png)
