@@ -3,7 +3,6 @@ from PygraphvizTree import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
 from PIL import Image, ImageTk
-from json import load
 import customtkinter as ctk
 from tkinter import ttk
 import tkinter as tk
