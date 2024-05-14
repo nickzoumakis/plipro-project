@@ -19,6 +19,7 @@ class Person:
         self.photo_path = ""
         self.generation = None
         self.own_union = None
+        self.sibling_unions = []
         self.oldest_ancestors = None
         Person.all.append(self)
 
@@ -307,6 +308,7 @@ class Graph:
                         if not person.siblings:
                             # δημιουργία node σύνδεσης
                             sib = "sib" + str(sib_nodes)
+                            person.sibling_unions.append(sib_nodes)
                             graph.add_node(sib, shape="circle", label="", height=0.01)
                             graph.add_edge(parent_union, sib, color=color)
                             graph.add_edge(sib, id, color=color)
@@ -326,6 +328,9 @@ class Graph:
                             for _ in range(total):
                                 sib = "sib" + str(sib_nodes)
                                 graph.add_node(sib, shape="circle", label="", height=0.01)
+                                person.sibling_unions.append(sib_nodes)
+                                for sibling in person.siblings:
+                                    sibling.sibling_unions.append(sib_nodes)
                                 inv_nodes.append(sib)
                                 sib_nodes += 1
                             # σύνδεση κόμβων μεταξύ τους
@@ -353,7 +358,11 @@ class Graph:
             current_gen += 1
 
         # μετά την πρώτη σχεδίαση, κλήση της optimize_edges για διόρθωση κακών διασταυρώσεων
-        self.optimize_edges(graph, people)
+        self.optimize_edges(graph, people, realign_spouses=True)
+        graph.layout(prog="dot")
+        self.optimize_edges(graph, people, center=True)
+        graph.layout(prog="dot")
+        self.optimize_edges(graph, people, realign_siblings=True)
         # τελικό layout και σχεδίαση εικόνας
         graph.layout(prog="dot")
         graph.draw(filepath)
@@ -370,32 +379,89 @@ class Graph:
        
 
     """ελέγχει την ύπαρξη κακών διασταυρώσεων και τις επιλύνει"""
-    def optimize_edges(self, graph, people):
-        for person in people:
-        # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
-            if person.spouse:
-                current = graph.get_node(person.id)
-                current_spouse = graph.get_node(person.spouse.id)
-                # εύρεση link κόμβου
-                for node in (current, current_spouse):
-                    for edge_tuple in graph.edges(node):
-                        for edge in edge_tuple:
-                            if 'link' in edge and node == current:
-                                current_link = edge
+    def optimize_edges(self, graph, people, realign_spouses=False, center=False, realign_siblings=False):
+        if realign_spouses:
+            for person in people:
+            # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
+                if person.spouse:
+                    current = graph.get_node(person.id)
+                    current_spouse = graph.get_node(person.spouse.id)
+                    # εύρεση link κόμβου
+                    for node in (current, current_spouse):
+                        for edge_tuple in graph.edges(node):
+                            for edge_node in edge_tuple:
+                                if 'link' in edge_node and node == current:
+                                    current_link = edge_node
+                                    # λήψη του χρώματος
+                                    color = graph.get_edge(*edge_tuple).attr['color']
+                                elif 'link' in edge_node and node == current_spouse:
+                                    current_spouse_link = edge_node
+                    # συντεταγμένες x κάθε κόμβου
+                    x_link_curr = float(graph.get_node(current_link).attr['pos'].split(',')[0])
+                    x_link_curr_spouse = float(graph.get_node(current_spouse_link).attr['pos'].split(',')[0])
+                    x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
+                    # αν η ανίσωση ισχύει, υπάρχει διασταύρωση των ακμών και γίνεται αντιστροφή τους
+                    if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
+                        # διαγραφή υπάρχουσας ένωσης
+                        graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
+                        # προσθήκη σωστών ενώσεων
+                        graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
+            
+        elif center:
+            for person in people:
+            # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
+                if person.spouse:
+                    current = graph.get_node(person.id)
+                    current_spouse = graph.get_node(person.spouse.id)
+                    current_point = graph.get_node("point" + str(person.own_union))
+                    # εύρεση link κόμβου
+                    for node in (current, current_spouse):
+                        for edge_tuple in graph.edges(node):
+                            for edge_node in edge_tuple:
+                                if 'link' in edge_node and node == current:
+                                    current_link = edge_node
+                                    # λήψη του χρώματος
+                                    color = graph.get_edge(*edge_tuple).attr['color']
+                                elif 'link' in edge_node and node == current_spouse:
+                                    current_spouse_link = edge_node
+                    # συντεταγμένες x κάθε κόμβου
+                    x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
+                    x_curr_spouse = float(graph.get_node(current_spouse).attr['pos'].split(',')[0])
+                    x_current_point = float(graph.get_node(current_point).attr['pos'].split(',')[0])
+                    if x_current_point > x_curr and x_current_point > x_curr_spouse or x_current_point < x_curr and x_current_point < x_curr_spouse:
+                        graph.add_edges_from([(current, current_point), (current_spouse, current_point)], color=color, style="invis")
+
+        elif realign_siblings:
+            for person in people:
+                if person.siblings:
+                    # συντεταγμένη Χ κόμβου ατόμου
+                    current = graph.get_node(person.id)
+                    current_x = float(graph.get_node(current).attr['pos'].split(',')[0])
+                    # εύρεση και λήψη του κόμβου sib (αγκύλη αδερφιών) που είναι τώρα ενωμένο το άτομο
+                    for edge_tuple in graph.edges(current):
+                        for edge_node in edge_tuple:
+                            if 'sib' in edge_node:
+                                curr_sib_link = edge_node
                                 # λήψη του χρώματος
                                 color = graph.get_edge(*edge_tuple).attr['color']
-                            elif 'link' in edge and node == current_spouse:
-                                current_spouse_link = edge
-                # συντεταγμένες x κάθε κόμβου
-                x_link_curr = float(graph.get_node(current_link).attr['pos'].split(',')[0])
-                x_link_curr_spouse = float(graph.get_node(current_spouse_link).attr['pos'].split(',')[0])
-                x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
-                # αν η ανίσωση ισχύει, υπάρχει διασταύρωση των ακμών και γίνεται αντιστροφή τους
-                if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
-                    # διαγραφή υπάρχουσας ένωσης
-                    graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
-                    # προσθήκη σωστών ενώσεων
-                    graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
+                    # συντεταγμένη Χ κόμβου sib
+                    curr_sib_link_x = float(graph.get_node(curr_sib_link).attr['pos'].split(',')[0])
+                    # λήψη όλων των κόμβων ένωσης με αδέρφια και τον αποστάσεων καθενός από το τωρινό
+                    sib_nodes = [
+                                    {
+                                    'id': graph.get_node("sib" + str(sibling_union)),
+                                    'dist': abs(float((graph.get_node("sib" + str(sibling_union)).attr['pos'].split(',')[0])) - current_x)
+                                    }
+                                  for sibling_union in person.sibling_unions
+                                ]
+                    # ταξινόμηση όλων των κόμβων sib με βάση την απόστασή τους Χ από το εξεταζόμενο
+                    sib_nodes = sorted(sib_nodes, key=lambda node: node['dist'])
+                    # εύρεση Χ συντεταγμένης του πλησιέστερου κόμβου sib στο current
+                    closest_sib_x = float(graph.get_node(sib_nodes[0]['id']).attr['pos'].split(',')[0])
+                    # αν η απόσταση από τον τωρινά συνδεδεμένο κόμβο sib είναι μεγαλύτερη από την απόσταση του πιο κοντινού sib, έχει γίνει διασταύρωση
+                    if abs(curr_sib_link_x - current_x) > abs(closest_sib_x - current_x):
+                        graph.remove_edge(curr_sib_link, current)
+                        graph.add_edge(sib_nodes[0]['id'], current, color=color)
 
 
     """Methods για επικοινωνία με το MainApp"""
