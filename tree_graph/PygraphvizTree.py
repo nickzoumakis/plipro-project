@@ -361,9 +361,10 @@ class Graph:
         self.optimize_edges(graph, people, realign_spouses=True)
         graph.layout(prog="dot")
         self.optimize_edges(graph, people, center=True)
-        graph.layout(prog="dot")
+        #graph.layout(prog="dot")
         self.optimize_edges(graph, people, realign_siblings=True)
         # τελικό layout και σχεδίαση εικόνας
+        self.cleanup(graph)
         graph.layout(prog="dot")
         graph.draw(filepath)
         
@@ -406,7 +407,7 @@ class Graph:
                         graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
                         # προσθήκη σωστών ενώσεων
                         graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
-            
+                graph.layout(prog="dot")
         elif center:
             for person in people:
             # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
@@ -431,7 +432,7 @@ class Graph:
                     # αν το κέντρο της αγκύλης έχει μετατοπιστεί δεξιότερα ή αριστερότερα , προσθέτουμε μια αόρατη ακμή για να το επαναφέρουμε στη θέση του
                     if x_current_point > x_curr and x_current_point > x_curr_spouse or x_current_point < x_curr and x_current_point < x_curr_spouse:
                         graph.add_edges_from([(current, current_point), (current_spouse, current_point)], color=color, style="invis")
-
+                graph.layout(prog="dot")
         elif realign_siblings:
             for person in people:
                 if person.siblings:
@@ -464,6 +465,14 @@ class Graph:
                         graph.remove_edge(curr_sib_link, current)
                         graph.add_edge(sib_nodes[0]['id'], current, color=color)
 
+                graph.layout(prog="dot")
+
+    def cleanup(self, graph):
+        for node_tuple in graph.edges():
+            for edge_node in node_tuple:
+                if 'link' in node_tuple or 'sib' in edge_node:
+                    if len(graph.edges(edge_node)) == 1:
+                        graph.remove_edge(node_tuple)
 
     """Methods για επικοινωνία με το MainApp"""
     """επιστρέφει τις συντεταγμένες κάθε κόμβου όταν κληθεί"""
