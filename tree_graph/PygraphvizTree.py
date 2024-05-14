@@ -428,6 +428,7 @@ class Graph:
                     x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
                     x_curr_spouse = float(graph.get_node(current_spouse).attr['pos'].split(',')[0])
                     x_current_point = float(graph.get_node(current_point).attr['pos'].split(',')[0])
+                    # αν το κέντρο της αγκύλης έχει μετατοπιστεί δεξιότερα ή αριστερότερα , προσθέτουμε μια αόρατη ακμή για να το επαναφέρουμε στη θέση του
                     if x_current_point > x_curr and x_current_point > x_curr_spouse or x_current_point < x_curr and x_current_point < x_curr_spouse:
                         graph.add_edges_from([(current, current_point), (current_spouse, current_point)], color=color, style="invis")
 
