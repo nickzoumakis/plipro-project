@@ -229,7 +229,7 @@ class Graph:
     """Σχεδιάζει το δέντρο μέσω του graphviz"""
     def show(self, filename, filepath):
         # αρχικοποιίηση του γραφήματος
-        graph = pgv.AGraph(splines="true", ranksep="0.75", nodesep="2.0")
+        graph = pgv.AGraph(splines="ortho", ranksep="0.75", nodesep="2.0")
         graph.node_attr.update(shape="box", penwidth=2.0, fontsize="20")
         graph.edge_attr.update(penwidth=5.0)
         # κλήση draw με τη sorted_all λίστα
