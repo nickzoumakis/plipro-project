@@ -25,7 +25,6 @@ class Person:
 
 
 """Class Graph: Σχεδιάζει το γενεαλογικό δέντρο"""
-# TODO: να διαχωριστούν κάποιες δράσεις από την init για περισσότερο έλεγχο από το χρήστη κατά την αρχικοποίηση
 class Graph:
     """init παίρνει το family_data, ανάλογα με την παράμετρο is_path που δόθηκε από το MainApp αναγνωρίζει 
     εάν πρόκειται για αρχείο json υπάρχοντος ή dict νέου γενεαλογικού δέντρου"""
@@ -33,7 +32,6 @@ class Graph:
         # depths και youngest_descendants είναι global και χρησιμοποιούνται για να αποθηκεύουν τις τιμές των αναδρομικών συναρτήσεων διατηρώντας σταθερό το περιεχόμενό τους 
         self.depths = []
         self.youngest_descendants = []
-        self.path = False
         # node_coordinates: dict με τις συντεταγμένες κάθε κόμβου
         self.node_coordinates = {}
 
@@ -435,7 +433,7 @@ class Graph:
                 graph.layout(prog="dot")
         elif realign_siblings:
             for person in people:
-                if person.siblings:
+                if person.siblings and len(person.siblings) > 1:
                     # συντεταγμένη Χ κόμβου ατόμου
                     current = graph.get_node(person.id)
                     current_x = float(graph.get_node(current).attr['pos'].split(',')[0])
@@ -459,20 +457,24 @@ class Graph:
                     # ταξινόμηση όλων των κόμβων sib με βάση την απόστασή τους Χ από το εξεταζόμενο
                     sib_nodes = sorted(sib_nodes, key=lambda node: node['dist'])
                     # εύρεση Χ συντεταγμένης του πλησιέστερου κόμβου sib στο current
-                    closest_sib_x = float(graph.get_node(sib_nodes[0]['id']).attr['pos'].split(',')[0])
-                    # αν η απόσταση από τον τωρινά συνδεδεμένο κόμβο sib είναι μεγαλύτερη από την απόσταση του πιο κοντινού sib, έχει γίνει διασταύρωση
-                    if abs(curr_sib_link_x - current_x) > abs(closest_sib_x - current_x):
-                        graph.remove_edge(curr_sib_link, current)
-                        graph.add_edge(sib_nodes[0]['id'], current, color=color)
+                    if sib_nodes:
+                        closest_sib_x = float(graph.get_node(sib_nodes[0]['id']).attr['pos'].split(',')[0])
+                        # αν η απόσταση από τον τωρινά συνδεδεμένο κόμβο sib είναι μεγαλύτερη από την απόσταση του πιο κοντινού sib, έχει γίνει διασταύρωση
+                        if abs(curr_sib_link_x - current_x) > abs(closest_sib_x - current_x):
+                            graph.remove_edge(curr_sib_link, current)
+                            graph.add_edge(sib_nodes[0]['id'], current, color=color)
 
                 graph.layout(prog="dot")
 
+    """καλείται μετά την optimize_edges για διαγραφή ορφανών συνδέσεων και κόμβων sib/link"""
     def cleanup(self, graph):
         for node_tuple in graph.edges():
             for edge_node in node_tuple:
-                if 'link' in node_tuple or 'sib' in edge_node:
+                if 'link' in edge_node or 'sib' in edge_node:
                     if len(graph.edges(edge_node)) == 1:
                         graph.remove_edge(node_tuple)
+                        graph.delete_node(edge_node)
+
 
     """Methods για επικοινωνία με το MainApp"""
     """επιστρέφει τις συντεταγμένες κάθε κόμβου όταν κληθεί"""
