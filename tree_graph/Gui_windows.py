@@ -599,20 +599,20 @@ class Tree_Window(ctk.CTkToplevel):
         pic_label.pack()
         # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info
         self.bind("<Button-1>", lambda event:self.get_node_info(event))
-        self.bind("<Motion>", lambda event:self.update_cursor(event, self))
+        self.bind("<Motion>", lambda event:self.update_cursor(event))
         # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
         self.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(self, graph))
 
 
-    def update_cursor(self, event, tree_img):
+    def update_cursor(self, event):
         width = 40
         height = 20
         for node_id, (x, y) in self.coordinates.items():
             if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
-                tree_img.config(cursor="hand1")
+                self.config(cursor="hand1")
                 break
             else:
-                tree_img.config(cursor="")
+                self.config(cursor="")
 
 
     """αξιοποιεί τις συντεταγμένες x, y του click event για να εντοπίσει τον κόμβο που πάτησε ο χρήστης στο παράθυρο του δέντρου"""
