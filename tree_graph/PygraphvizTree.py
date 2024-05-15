@@ -171,10 +171,20 @@ class Graph:
         for person in set(self.youngest_descendants):     # χρήση set, το descendants έχει πολλές φορές τον κάθε νεότερο απόγονο αφού προσεγγίζονται και από τους 2 γονείς τους
             person.generation = max_depth
 
-        # πηγαίνουμε προς τα πάνω από τους νεότερους απογόνους, μειώνοντας τη γενιά κατα 1 κάθε φορά 
-        for person in set(self.youngest_descendants):
-            for parent in person.parents:
-                self.assign_generations_up(parent, max_depth - 1)
+        # πηγαίνουμε προς τα πάνω από τους νεότερους απογόνους, μειώνοντας τη γενιά κατα 1 κάθε φορά
+        current_generation = max_depth
+        while current_generation >= 0:
+            for person in people:
+                if person.generation:
+                    for sibling in person.siblings:
+                        sibling.generation = person.generation
+                    if person.spouse:
+                        person.spouse.generation = person.generation
+                    for parent in person.parents:
+                        parent.generation = person.generation - 1
+                    for child in person.children:
+                        child.generation = person.generation + 1
+            current_generation -= 1
     
 
     """youngest: εύρεση των νεότερων απογόνων=>τα άτομα για τα οποία υπάρχει 
@@ -184,40 +194,20 @@ class Graph:
         if count == generations:
             self.youngest_descendants.append(person)
         else:
-            if person.spouse and not is_spouse:
-                self.youngest(person.spouse, count, generations, is_spouse=True)
+            # ίδια γενιά για κάθε αδερφό
             if not is_sibling:
                 for sibling in person.siblings:
+                    # θέτω την is_sibling προαιρετική παράμετρο True εφόσον βρίσκομαι σε αδερφό
+                    # διαφορετικά πέφτουμε σε infinite recursion loop (συνεχές μπρος πίσω μεταξύ αδερφών)
                     self.youngest(sibling, count, generations, is_sibling=True)
+
+            # ομοίως για συζύγους
+            if person.spouse and not is_spouse:
+                self.youngest(person.spouse, count, generations, is_spouse=True)
+
             for child in person.children:
                 # κίνηση προς παιδί (προς τα κάτω), ο μετρητής αυξάνεται
                 self.youngest(child, count + 1, generations)
-
-
-
-    """assign_generations_up: ανάθεση αριθμού γενιάς ξεκινώντας από τους νεότερους απογόνους που βρήκε η youngest 
-        και πηγαίνοντας προς τα πάνω (μονοπάτι parents)"""
-    def assign_generations_up(self, person, current_generation, is_sibling=False, is_spouse=False):
-        if current_generation >= 0:
-            person.generation = current_generation
-            
-        # ίδια γενιά για κάθε αδερφό 
-        if not is_sibling:
-            for sibling in person.siblings:
-                sibling.generation = current_generation
-                # θέτω την is_sibling προαιρετική παράμετρο True εφόσον βρίσκομαι σε αδερφό
-                # διαφορετικά πέφτουμε σε infinite recursion loop (συνεχές μπρος πίσω μεταξύ αδερφών)
-                self.assign_generations_up(sibling, current_generation, is_sibling=True)
-
-        # ομοίως για συζύγους
-        if person.spouse and not is_spouse:
-            person.spouse.generation = current_generation
-            self.assign_generations_up(person.spouse, current_generation, is_spouse=True)
-        
-        # περνάω στους γονείς μειώνοντας τη γενιά κατά 1
-        for parent in person.parents:
-            parent.generation = current_generation - 1
-            self.assign_generations_up(parent, current_generation - 1)
 
 
     """βρίσκει τον αρχαιότερο πρόγονο ενός ατόμου"""
