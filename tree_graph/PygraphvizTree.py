@@ -180,13 +180,19 @@ class Graph:
     """youngest: εύρεση των νεότερων απογόνων=>τα άτομα για τα οποία υπάρχει 
         μονοπάτι προς αυτά προς τα κάτω (μονοπάτι children) με τόσα βήματα 
         όσα και το σύνολο των γενεών""" 
-    def youngest(self, person, count, generations):
+    def youngest(self, person, count, generations, is_spouse=False, is_sibling=False):
         if count == generations:
             self.youngest_descendants.append(person)
         else:
+            if person.spouse and not is_spouse:
+                self.youngest(person.spouse, count, generations, is_spouse=True)
+            if not is_sibling:
+                for sibling in person.siblings:
+                    self.youngest(sibling, count, generations, is_sibling=True)
             for child in person.children:
                 # κίνηση προς παιδί (προς τα κάτω), ο μετρητής αυξάνεται
                 self.youngest(child, count + 1, generations)
+
 
 
     """assign_generations_up: ανάθεση αριθμού γενιάς ξεκινώντας από τους νεότερους απογόνους που βρήκε η youngest 
@@ -405,7 +411,7 @@ class Graph:
                         graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
                         # προσθήκη σωστών ενώσεων
                         graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
-                graph.layout(prog="dot")
+                        graph.layout(prog="dot")
         elif center:
             for person in people:
             # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
@@ -430,7 +436,7 @@ class Graph:
                     # αν το κέντρο της αγκύλης έχει μετατοπιστεί δεξιότερα ή αριστερότερα , προσθέτουμε μια αόρατη ακμή για να το επαναφέρουμε στη θέση του
                     if x_current_point > x_curr and x_current_point > x_curr_spouse or x_current_point < x_curr and x_current_point < x_curr_spouse:
                         graph.add_edges_from([(current, current_point), (current_spouse, current_point)], color=color, style="invis")
-                graph.layout(prog="dot")
+                        graph.layout(prog="dot")
         elif realign_siblings:
             for person in people:
                 if person.siblings and len(person.siblings) > 1:
@@ -463,8 +469,8 @@ class Graph:
                         if abs(curr_sib_link_x - current_x) > abs(closest_sib_x - current_x):
                             graph.remove_edge(curr_sib_link, current)
                             graph.add_edge(sib_nodes[0]['id'], current, color=color)
+                            graph.layout(prog="dot")
 
-                graph.layout(prog="dot")
 
     """καλείται μετά την optimize_edges για διαγραφή ορφανών συνδέσεων και κόμβων sib/link"""
     def cleanup(self, graph):
@@ -474,6 +480,7 @@ class Graph:
                     if len(graph.edges(edge_node)) == 1:
                         graph.remove_edge(node_tuple)
                         graph.delete_node(edge_node)
+                        graph.layout(prog="dot")
 
 
     """Methods για επικοινωνία με το MainApp"""

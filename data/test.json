@@ -148,5 +148,20 @@
         "father_id": "3",
         "spouse_id": "",
         "photo_path": ""
+    },
+    "30": {
+        "name": "cousin",
+        "surname": "",
+        "date_of_birth": "",
+        "gender": "male",
+        "date_of_death": "",
+        "mother_name": "aunt",
+        "mother_surname": "",
+        "mother_id": "31",
+        "father_name": "uncle",
+        "father_surname": "",
+        "father_id": "10",
+        "spouse_id": "",
+        "photo_path": ""
     }
 }
