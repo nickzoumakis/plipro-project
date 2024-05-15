@@ -162,7 +162,7 @@ class Graph:
     τα άτομα και το συνολικό πλήθος των γενεών"""
     def assign_generations(self, people, max_depth):  
         # εύρεση πρώτα των νεότερων απογόνων
-        # αρκεί να ψάξουμε τις διαδρομές από τους γηραιότερους, αυτούς που δεν έχουν γονείς
+        # αρκεί να ψάξουμε τις διαδρομές από αυτούς που δεν έχουν γονείς
         oldest = [person for person in people if not person.parents]
         for person in oldest:
             self.youngest(person, 0, max_depth)
