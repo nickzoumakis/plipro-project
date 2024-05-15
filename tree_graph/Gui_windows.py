@@ -601,7 +601,7 @@ class Tree_Window(ctk.CTkToplevel):
         self.bind("<Button-1>", lambda event:self.get_node_info(event))
         self.bind("<Motion>", lambda event:self.update_cursor(event))
         # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
-        self.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(self, graph))
+        self.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(graph))
 
 
     def update_cursor(self, event):
@@ -642,9 +642,9 @@ class Tree_Window(ctk.CTkToplevel):
 
 
     """διαγράφει τη λίστα με τα Person objects στο Tree class"""
-    def kill_window(self, tree_img, graph):
+    def kill_window(self, graph):
         graph.delete_people()
-        tree_img.destroy()
+        self.destroy()
         
 
 """Subclass νέου παραθύρου με τις πληροφορίες του ατόμου που έγινε κλικ"""
