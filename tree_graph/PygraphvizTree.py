@@ -353,7 +353,7 @@ class Graph:
 
         # μετά την πρώτη σχεδίαση, κλήση της optimize_edges για διόρθωση κακών διασταυρώσεων
         self.optimize_edges(graph, people, realign_spouses=True)
-        graph.layout(prog="dot")
+        #graph.layout(prog="dot")
         self.optimize_edges(graph, people, center=True)
         #graph.layout(prog="dot")
         self.optimize_edges(graph, people, realign_siblings=True)
@@ -429,7 +429,7 @@ class Graph:
                         graph.layout(prog="dot")
         elif realign_siblings:
             for person in people:
-                if person.siblings and len(person.siblings) > 1:
+                if person.siblings:
                     # συντεταγμένη Χ κόμβου ατόμου
                     current = graph.get_node(person.id)
                     current_x = float(graph.get_node(current).attr['pos'].split(',')[0])
