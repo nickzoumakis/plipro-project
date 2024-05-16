@@ -97,15 +97,16 @@ class Graph:
             parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}", 
                             f"{data[id]['father_name']} {data[id]['father_surname']}")
             parent_genders = ('female', 'male')
-            for parent_id, parent_name, parent_gender in zip(parent_ids, parent_names, parent_genders):
-                if parent_id not in existing:
-                    parent = Person(parent_id, parent_name)
-                else:
-                    parent = self.get_person(parent_id, current.all)
-                # σύνδεση γονιού με παιδί και αντίστροφα
-                parent.gender = parent_gender
-                parent.children.append(current)
-                current.parents.append(parent)
+            if parent_ids[0]:
+                for parent_id, parent_name, parent_gender in zip(parent_ids, parent_names, parent_genders):
+                    if parent_id not in existing:
+                        parent = Person(parent_id, parent_name)
+                    else:
+                        parent = self.get_person(parent_id, current.all)
+                    # σύνδεση γονιού με παιδί και αντίστροφα
+                    parent.gender = parent_gender
+                    parent.children.append(current)
+                    current.parents.append(parent)
             # ενημέρωση της existing με τα id όλων των αρχικοποιημένων Persons
             existing = [person.id for person in current.all]
 
