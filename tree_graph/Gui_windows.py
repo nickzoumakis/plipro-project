@@ -594,6 +594,9 @@ class Tree_Window(ctk.CTkToplevel):
         img_path = Path.cwd().parent / 'graph' / img_filename
         # άνοιγμα εικόνας με PIL
         self.tree_img = Image.open(img_path)
+        # ορισμός μέγιστων διαστάσεων παραθύρου με βάση τις διαστάσεις της εικόνας του δέντρου
+        self.wm_maxsize(*self.tree_img.size)
+        # τοποθέτηση εικόνας στο παράθυρο ως label
         self.img = ImageTk.PhotoImage(self.tree_img)
         pic_label = tk.Label(self, image=self.img)
         pic_label.pack()
