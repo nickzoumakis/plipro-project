@@ -4,7 +4,7 @@
 from PygraphvizTree import Person, Graph
 from pathlib import Path
 import pygraphviz as pgv
-from PIL import Image, ImageTk
+from PIL import Image, ImageOps, ImageTk
 import customtkinter as ctk
 from tkinter import ttk
 import tkinter as tk
@@ -661,7 +661,8 @@ class Info_Popup(ctk.CTkToplevel):
         # εμφάνιση φωτογραφίας, αν υπάρχει
         if current_clicked.photo_path:
             photo = Image.open(current_clicked.photo_path)
-            photo = photo.resize((200, 200))
+            # χρήση της cover από το ImageOps του PIL για διατήρηση του λόγου πλευρών
+            photo = ImageOps.cover(photo, (200, 200))
             self.pic = ImageTk.PhotoImage(photo)
             pic_label = tk.Label(self, image=self.pic)
             pic_label.pack()
