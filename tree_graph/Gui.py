@@ -456,123 +456,12 @@ class MainApp(ctk.CTk):
         self.load_image(full_img_filename, graph)
 
 
-    """ load_image: άνοιγμα εικόνας δέντρου σε νέο παράθυρο tkinter """
+    """ load_image: άνοιγμα εικόνας δέντρου σε νέο παράθυρο tkinter (καλώντας νέο subclass: Tree_Window) """
     def load_image(self, img_filename, graph):
-            # ανάθεση στο path
-            img_path = Path.cwd().parent / 'graph' / img_filename
-            # άνοιγμα εικόνας με PIL
-            img = Image.open(img_path)
-            # ακριβές μέγεθος εικόνας για τις διαστάσεις του παραθύρου
-            dimensions = f'{img.width}x{img.height}'
-            # άνοιγμα εικόνας σε νέο παράθυρο tkinter
-            # όταν φτιάχνω νέο παράθυρο, ποτέ δεν το ορίζω ως καινούριο tk.Τk() αντικείμενο αλλά σαν TopLevel του master window
-            tree_img = ctk.CTkToplevel(self)
-            tree_img.title("Γενεαλογικό Δέντρο")
-            tree_img.geometry(dimensions)
-            img = tk.PhotoImage(file=img_path)
-            img_label = tk.Label(tree_img, image=img)
-            # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info
-            tree_img.bind("<Button-1>", lambda event:self.get_node_info(event))
-            tree_img.bind("<Motion>", lambda event:self.update_cursor(event, tree_img))
-            img_label.pack()
-            # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
-            tree_img.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(tree_img, graph))
-            tree_img.mainloop()
+        tree = Tree_Window(self, img_filename, graph)
+        # φέρνουμε το παράθυρο του δέντρου στο προσκήνιο
+        tree.attributes("-topmost", True)
 
-
-    def update_cursor(self, event, tree_img):
-        width = 40
-        height = 20
-        for node_id, (x, y) in self.coordinates.items():
-            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
-                tree_img.config(cursor="hand1")
-                break
-            else:
-                tree_img.config(cursor="")
-
-                
-    """αξιοποιεί τις συντεταγμένες x, y του click event για να εντοπίσει τον κόμβο που πάτησε ο χρήστης στο παράθυρο του δέντρου"""
-    def get_node_info(self, event):
-        # αυθαίρετα προσδιορισμένα όρια κόμβων
-        width = 40
-        height = 20
-        for node_id, (x, y) in self.coordinates.items():
-            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
-                # άνοιγμα νέου παραθύρου με τις πληροφορίες του ατόμου
-                self.open_info_win(self.get_person(node_id, self.all))
-
-
-    """επιστρέφει το Person object με τα στοιχεία του κόμβου που πάτησε ο χρήστης"""
-    def get_person(self, id, all):
-        id_list = [person.id for person in all]
-        for i, person_id in enumerate(id_list):
-            if person_id == id:
-                return  all[i]
-
-
-    """ανοίγει νέο παράθυρο με τις πληροφορίες του ατόμου που έγινε κλικ"""
-    def open_info_win(self, current_clicked):
-        popup = ctk.CTkToplevel(self)
-        popup.configure(bg="lightgray")
-        fontsize = 16
-        popup.title("Πληροφορίες ατόμου")
-
-        label_name = ctk.CTkLabel(popup, text="Όνομα: " + current_clicked.name, font=("Arial", fontsize))
-        label_name.pack()
-        # εμφάνιση φωτογραφίας, αν υπάρχει
-        if current_clicked.photo_path:
-            photo = Image.open(current_clicked.photo_path)
-            photo = photo.resize((200, 200))
-            self.pic = ImageTk.PhotoImage(photo)
-            pic_label = tk.Label(popup, image=self.pic)
-            pic_label.pack()
-
-        parents = ""
-        ancestors = ""
-        date_of_birth = ""
-        date_of_death = ""
-        # αν υπάρχουν γονείς, τους προσθέτουμε στο string parents χωρίζοντας με κόμμα
-        if current_clicked.parents:
-            parents = f"{current_clicked.parents[0].name}, {current_clicked.parents[1].name}"
-        # αν το άτομο έχει παλιότερους προγόνους, προσθέτουμε τα ονόματά τους στο string ancestors χωρισμένα με κόμμα
-        if current_clicked.oldest_ancestors:
-            for i, ancestor in enumerate(current_clicked.oldest_ancestors):
-                if i != len(current_clicked.oldest_ancestors) - 1:
-                    if i % 2 == 0:
-                        ancestors += ancestor.name + ", "
-                    else:
-                        ancestors += ancestor.name + '\n'
-                else:
-                    ancestors += ancestor.name
-        # προσθήκη επιπλέον πληροφοριών (ημερομηνία γέννησης/θανάτου)
-        if current_clicked.dob:
-            date_of_birth = current_clicked.dob
-        if current_clicked.dod:
-            date_of_death = current_clicked.dod
-        
-        # δημιουργία πεδίων "Παλαιότεροι πρόγονοι" και "Γονείς", εφόσον υπάρχουν
-        if ancestors:
-            label_ancestor = ctk.CTkLabel(popup, text="Παλαιότεροι πρόγονοι: " + ancestors, font=("Arial", fontsize))
-            label_ancestor.pack()
-        if parents:
-            label_parents = ctk.CTkLabel(popup, text="Γονείς: " + parents, font=("Arial", fontsize))
-            label_parents.pack()
-        if date_of_birth:
-            label_dob = ctk.CTkLabel(popup, text="Ημερομηνία Γέννησης: " + date_of_birth, font=("Arial", fontsize))
-            label_dob.pack()
-        if date_of_death:
-            label_dod = ctk.CTkLabel(popup, text="Ημερομηνία Θανάτου: " + date_of_death, font=("Arial", fontsize))
-            label_dod.pack()
-        # κουμπί κλεισίματος παραθύρου
-        close_button = ctk.CTkButton(popup, text="Κλείσιμο", command=popup.destroy)
-        close_button.pack()
-
-
-    """διαγράφει τη λίστα με τα Person objects στο Tree class"""
-    def kill_window(self, tree_img, graph):
-        graph.delete_people()
-        tree_img.destroy()
-    
 
     def upload_img(self):
         #  αποδεκτοί τύποι αρχείων εικόνας
@@ -589,6 +478,7 @@ class MainApp(ctk.CTk):
         else:
             print("No file chosen.")
             return
+
 
 """Κλάση Popup: Υλοποιεί το εισαγωγικό παράθυρο επιλογής υπάρχοντος json ή δημηιουργίας νέου.ge
     είναι subclass του MainApp, κατηγορίας Toplevel"""
@@ -695,6 +585,137 @@ class Startup_Popup(ctk.CTkToplevel):
     def get_files(self):
         return self.files
     
+"""Κλάση Tree_Window: Άνοιγμα της εικόνας του δέντρου σε νέο παράθυρο"""
+class Tree_Window(ctk.CTkToplevel):
+    def __init__(self, master, img_filename, graph):
+        super().__init__(master)
+        self.tree_img = None
+        # πέρασμα στην self.coordinates των συντεταγμένων που έλαβε η MainApp από το PygraphvizTree
+        self.coordinates = master.coordinates
+        # πέρασμα στην self.all των Person objects από τη MainApp
+        self.all = master.all
+        # ανάθεση στο path
+        img_path = Path.cwd().parent / 'graph' / img_filename
+        # άνοιγμα εικόνας με PIL
+        self.tree_img = Image.open(img_path)
+        self.img = ImageTk.PhotoImage(self.tree_img)
+        pic_label = tk.Label(self, image=self.img)
+        pic_label.pack()
+        # για όσο τρέχει το παράθυρο του δέντρου, κάνουμε bind το click event στο get_node_info
+        self.bind("<Button-1>", lambda event:self.get_node_info(event))
+        self.bind("<Motion>", lambda event:self.update_cursor(event))
+        # όταν κλείσει παράθυρο , διαγράφουμε τη λίστα με τα persons από το graph 
+        self.protocol("WM_DELETE_WINDOW", lambda: self.kill_window(graph))
+
+
+    def update_cursor(self, event):
+        width = 40
+        height = 20
+        for node_id, (x, y) in self.coordinates.items():
+            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
+                self.config(cursor="hand1")
+                break
+            else:
+                self.config(cursor="")
+
+
+    """αξιοποιεί τις συντεταγμένες x, y του click event για να εντοπίσει τον κόμβο που πάτησε ο χρήστης στο παράθυρο του δέντρου"""
+    def get_node_info(self, event):
+        # αυθαίρετα προσδιορισμένα όρια κόμβων
+        width = 40
+        height = 20
+        for node_id, (x, y) in self.coordinates.items():
+            if event.x in range(x - width, x  + width) and event.y in range(y - height, y + height):
+                # άνοιγμα νέου παραθύρου με τις πληροφορίες του ατόμου
+                self.open_info_win(self.get_person(node_id, self.all))
+
+
+    """επιστρέφει το Person object με τα στοιχεία του κόμβου που πάτησε ο χρήστης"""
+    def get_person(self, id, all):
+        id_list = [person.id for person in all]
+        for i, person_id in enumerate(id_list):
+            if person_id == id:
+                return  all[i]
+
+
+    def open_info_win(self, current_clicked):
+        info_popup = Info_Popup(self, current_clicked)
+        # κάνουμε focus στο νέο παράθυρο
+        self.attributes("-topmost", False)
+        info_popup.attributes("-topmost", True)
+
+
+    """διαγράφει τη λίστα με τα Person objects στο Tree class"""
+    def kill_window(self, graph):
+        graph.delete_people()
+        self.destroy()
+        
+
+"""Subclass νέου παραθύρου με τις πληροφορίες του ατόμου που έγινε κλικ"""
+class Info_Popup(ctk.CTkToplevel):
+    def __init__(self, master, current_clicked):
+        super().__init__(master)
+        self.pic = None
+        self.configure(bg="lightgray")
+        fontsize = 16
+        self.title("Πληροφορίες ατόμου")
+
+        label_name = ctk.CTkLabel(self, text="Όνομα: " + current_clicked.name, font=("Arial", fontsize))
+        label_name.pack()
+        # εμφάνιση φωτογραφίας, αν υπάρχει
+        if current_clicked.photo_path:
+            photo = Image.open(current_clicked.photo_path)
+            photo = photo.resize((200, 200))
+            self.pic = ImageTk.PhotoImage(photo)
+            pic_label = tk.Label(self, image=self.pic)
+            pic_label.pack()
+
+        parents = ""
+        ancestors = ""
+        date_of_birth = ""
+        date_of_death = ""
+        # αν υπάρχουν γονείς, τους προσθέτουμε στο string parents χωρίζοντας με κόμμα
+        if current_clicked.parents:
+            parents = f"{current_clicked.parents[0].name}, {current_clicked.parents[1].name}"
+        # αν το άτομο έχει παλιότερους προγόνους, προσθέτουμε τα ονόματά τους στο string ancestors χωρισμένα με κόμμα
+        if current_clicked.oldest_ancestors:
+            for i, ancestor in enumerate(current_clicked.oldest_ancestors):
+                if i != len(current_clicked.oldest_ancestors) - 1:
+                    if i % 2 == 0:
+                        ancestors += ancestor.name + ", "
+                    else:
+                        ancestors += ancestor.name + '\n'
+                else:
+                    ancestors += ancestor.name
+        # προσθήκη επιπλέον πληροφοριών (ημερομηνία γέννησης/θανάτου)
+        if current_clicked.dob:
+            date_of_birth = current_clicked.dob
+        if current_clicked.dod:
+            date_of_death = current_clicked.dod
+        
+        # δημιουργία πεδίων "Παλαιότεροι πρόγονοι" και "Γονείς", εφόσον υπάρχουν
+        if ancestors:
+            label_ancestor = ctk.CTkLabel(self, text="Παλαιότεροι πρόγονοι: " + ancestors, font=("Arial", fontsize))
+            label_ancestor.pack()
+        if parents:
+            label_parents = ctk.CTkLabel(self, text="Γονείς: " + parents, font=("Arial", fontsize))
+            label_parents.pack()
+        if date_of_birth:
+            label_dob = ctk.CTkLabel(self, text="Ημερομηνία Γέννησης: " + date_of_birth, font=("Arial", fontsize))
+            label_dob.pack()
+        if date_of_death:
+            label_dod = ctk.CTkLabel(self, text="Ημερομηνία Θανάτου: " + date_of_death, font=("Arial", fontsize))
+            label_dod.pack()
+        # κουμπί κλεισίματος παραθύρου
+        close_button = ctk.CTkButton(self, text="Κλείσιμο", command=lambda:self.kill_info_popup(master))
+        close_button.pack()
+    
+    def kill_info_popup(self, master):
+        master.attributes("-topmost", True)
+        self.destroy()
+
+
+
 
 """Συνάρτηση main"""
 def main():
