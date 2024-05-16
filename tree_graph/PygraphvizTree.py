@@ -190,17 +190,10 @@ class Graph:
     """youngest: εύρεση των νεότερων απογόνων=>τα άτομα για τα οποία υπάρχει 
         μονοπάτι προς αυτά προς τα κάτω (μονοπάτι children) με τόσα βήματα 
         όσα και το σύνολο των γενεών""" 
-    def youngest(self, person, count, generations, is_spouse=False, is_sibling=False):
+    def youngest(self, person, count, generations, is_spouse=False):
         if count == generations:
             self.youngest_descendants.append(person)
         else:
-            # ίδια γενιά για κάθε αδερφό
-            if not is_sibling:
-                for sibling in person.siblings:
-                    # θέτω την is_sibling προαιρετική παράμετρο True εφόσον βρίσκομαι σε αδερφό
-                    # διαφορετικά πέφτουμε σε infinite recursion loop (συνεχές μπρος πίσω μεταξύ αδερφών)
-                    self.youngest(sibling, count, generations, is_sibling=True)
-
             # ομοίως για συζύγους
             if person.spouse and not is_spouse:
                 self.youngest(person.spouse, count, generations, is_spouse=True)
