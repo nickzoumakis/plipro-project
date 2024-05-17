@@ -131,8 +131,9 @@ class Graph:
             # αν δεν υπάρχει σύζυγος από γονεϊκή σχέση αλλά υπάρχει spouse_id στο json, έχουμε σύζυγο χωρίς τέκνα
             if not current.spouse and data[id]["spouse_id"]:
                 spouse = self.get_person(data[id]["spouse_id"], all)
-                current.spouse = spouse
-                spouse.spouse = current
+                if spouse:
+                    current.spouse = spouse
+                    spouse.spouse = current
 
         # επιστροφή της λίστας όλων των ατόμων στη main
         return all
