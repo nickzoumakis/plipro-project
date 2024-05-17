@@ -166,6 +166,7 @@ class Graph:
             self.depths.append(count + 1)
             # αναδρομική κλήση για κάθε παιδί με προσαυξημένο το μετρητή βημάτων
             self.traverse_down(child, count + 1)
+        self.depths.append(count)
 
 
     """assign_generations: αποδίδει αριθμό γενιάς σε κάθε άτομο που έχει δηλωθεί. Ορίσματα η λίστα με όλα
