@@ -271,9 +271,9 @@ class Graph:
                         link_left = "link" + str(id)
                         link_right = "link" + str(spouse_id)
                         # κόμβοι
-                        graph.add_node(point, shape="circle", label="", height=0.01)
-                        graph.add_node(link_left, shape="circle", label="", height=0.01)
-                        graph.add_node(link_right, shape="circle", label="", height=0.01)
+                        graph.add_node(point, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
+                        graph.add_node(link_left, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
+                        graph.add_node(link_right, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
                         # ακμές
                         graph.add_edges_from([(link_left, point), (point, link_right)], color=marriage_colors[color_set % 3])
                         graph.add_subgraph([link_left, point, link_right], rank="same")
@@ -302,7 +302,7 @@ class Graph:
                             # δημιουργία node σύνδεσης
                             sib = "sib" + str(sib_nodes)
                             person.sibling_unions.append(sib_nodes)
-                            graph.add_node(sib, shape="circle", label="", height=0.01)
+                            graph.add_node(sib, label="", height=0.05, width=0.05, style="filled", fillcolor=color, color=color)
                             graph.add_edge(parent_union, sib, color=color)
                             graph.add_edge(sib, id, color=color)
                             sib_nodes += 1
@@ -320,7 +320,7 @@ class Graph:
                             # κόμβοι σύνδεσης
                             for _ in range(total):
                                 sib = "sib" + str(sib_nodes)
-                                graph.add_node(sib, shape="circle", label="", height=0.01)
+                                graph.add_node(sib, label="", height=0.05, width=0.05, style="filled", fillcolor=color, color=color)
                                 person.sibling_unions.append(sib_nodes)
                                 for sibling in person.siblings:
                                     sibling.sibling_unions.append(sib_nodes)
