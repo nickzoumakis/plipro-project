@@ -26,8 +26,7 @@ class Person:
 
 """Class Graph: Σχεδιάζει το γενεαλογικό δέντρο"""
 class Graph:
-    """init παίρνει το family_data, ανάλογα με την παράμετρο is_path που δόθηκε από το MainApp αναγνωρίζει 
-    εάν πρόκειται για αρχείο json υπάρχοντος ή dict νέου γενεαλογικού δέντρου"""
+    """init παίρνει το family_data dict που δόθηκε από το MainApp"""
     def __init__(self, family_data):
         # depths και youngest_descendants είναι global και χρησιμοποιούνται για να αποθηκεύουν τις τιμές των αναδρομικών συναρτήσεων διατηρώντας σταθερό το περιεχόμενό τους 
         self.depths = []
