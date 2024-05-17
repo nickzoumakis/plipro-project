@@ -126,6 +126,15 @@ class Graph:
                 person.parents[0].spouse = person.parents[1]
                 person.parents[1].spouse = person.parents[0]
 
+        # 3o pass για την εύρεση συζύγων χωρίς παιδιά
+        for id in data:
+            current = self.get_person(id, all)
+            # αν δεν υπάρχει σύζυγος από γονεϊκή σχέση αλλά υπάρχει spouse_id στο json, έχουμε σύζυγο χωρίς τέκνα
+            if not current.spouse and data[id]["spouse_id"]:
+                spouse = self.get_person(data[id]["spouse_id"], all)
+                current.spouse = spouse
+                spouse.spouse = current
+
         # επιστροφή της λίστας όλων των ατόμων στη main
         return all
 
@@ -136,6 +145,7 @@ class Graph:
         for i, person_id in enumerate(id_list):
             if person_id == id:
                 return all[i]
+        return None
             
 
     """ Επιστρέφει True αν τα Person1 και 2 είναι αδέρφια """        

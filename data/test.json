@@ -86,7 +86,7 @@
         "father_name": "grandfather",
         "father_surname": "",
         "father_id": "9",
-        "spouse_id": "",
+        "spouse_id": "30",
         "photo_path": ""
     },
     "5": {
@@ -150,18 +150,18 @@
         "photo_path": ""
     },
     "30": {
-        "name": "cousin",
+        "name": "aunt",
         "surname": "",
         "date_of_birth": "",
-        "gender": "male",
+        "gender": "female",
         "date_of_death": "",
-        "mother_name": "aunt",
+        "mother_name": "",
         "mother_surname": "",
-        "mother_id": "31",
-        "father_name": "uncle",
+        "mother_id": "",
+        "father_name": "",
         "father_surname": "",
-        "father_id": "10",
-        "spouse_id": "",
+        "father_id": "",
+        "spouse_id": "10",
         "photo_path": ""
     }
 }
