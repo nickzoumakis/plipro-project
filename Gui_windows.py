@@ -1,6 +1,8 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
 import pprint
 
+import self
+
 """Windows version"""
 
 from PygraphvizTree import Person, Graph
@@ -12,6 +14,7 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import simpledialog
 import json
+
 
 
 class MainApp(ctk.CTk):
@@ -130,35 +133,76 @@ class MainApp(ctk.CTk):
 
 
         # Κουμπιά αλληλεπίδρασης χρήστη, κάθε command οδηγεί σε νέο function του class
+        current_path = Path.cwd()
+        ok_path = current_path / "ok.png"
+        ok_image = ctk.CTkImage(Image.open(ok_path), size=(30, 30))
+
         self.btn_add = ctk.CTkButton(master=self, text="Προσθήκη νέου ατόμου", corner_radius=32, command=self.add_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=4, width=20, height=50)
-        self.btn_add.place(relx=0.13, rely=0.8, anchor="ne")
+                            border_width=4, width=20, height=50,
+                            image=ok_image,  # Προσθήκη της εικόνας στο κουμπί
+                            compound="left"
+                            )
+        self.btn_add.place(relx=0.15, rely=0.8, anchor="ne")
 
-        # αλλαγή κουμπιού σε 'Δημιουργία Δέντρου' -> περνάει όλα τα άτομα από το family tree dict στο Graph 
-        self.btn_treeview = ctk.CTkButton(master=self, text="Δημιουργία Δέντρου", corner_radius=32, command=self.create_tree,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=4, width=20, height=50)
-        self.btn_treeview.place (relx=0.30, rely=0.8, anchor="ne")
+        current_path = Path.cwd()
+        image_path = current_path / "tree_img.png"
 
-        self.btn_clear = ctk.CTkButton(master=self, text="Καθαρισμός πεδίων", corner_radius=32, command=self.clear_fields,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
-        self.btn_clear.place (relx=0.45, rely=0.8, anchor="ne")
+        # Δημιουργία της εικόνας
+        tree_image = ctk.CTkImage(Image.open(image_path), size=(30, 30))
+
+        # αλλαγή κουμπιού σε 'Δημιουργία Δέντρου' -> περνάει όλα τα άτομα από το family tree dict στο Graph
+        # Δημιουργία του κουμπιού με εικόνα
+        self.btn_treeview = ctk.CTkButton(
+            master=self,
+            text="Δημιουργία Δέντρου",
+            corner_radius=32, command=self.create_tree,
+            fg_color="light blue", hover_color="blue",
+            border_color="blue", text_color="black",
+            border_width=4, width=20, height=50,
+            image=tree_image,  # Προσθήκη της εικόνας στο κουμπί
+            compound="left"  # Τοποθέτηση της εικόνας στα αριστερά του κειμένου
+        )
+        self.btn_treeview.place (relx=0.31, rely=0.8, anchor="ne")
+
+        clear_path = current_path / "clear.png"
+        clear_image = ctk.CTkImage(Image.open(clear_path), size=(40, 40))
+        self.btn_clear = ctk.CTkButton ( master=self, text="Καθαρισμός πεδίων", corner_radius=32,
+                                        command=self.clear_fields,
+                                        fg_color="light blue", hover_color="blue",
+                                        border_color="blue",  text_color="black",
+                                        border_width=2, width=20, height=50,
+                                        image=clear_image,  # Προσθήκη της εικόνας στο κουμπί
+                                        compound="left")
+        self.btn_clear.place (relx=0.47, rely=0.8, anchor="ne")
+
+        update_path = current_path / "update.png"
+        update_image = ctk.CTkImage(Image.open(update_path), size=(40, 40))
 
         self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων", corner_radius=32, command=self.update_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
+                            border_width=2, width=20, height=50,
+                            image = update_image,
+                            compound = "left")
         self.btn_update.place(relx=0.63, rely=0.8, anchor="ne")
 
-        self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32, command=self.delete_person,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
+        can_path = current_path / "carbage can.jpg"
+        can_image = ctk.CTkImage(Image.open(can_path), size=(45, 45))
+        self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32,
+                                        command=self.delete_person,
+                                        fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
+                                        border_width=2, width=20, height=50,
+                                        image = can_image,  # Προσθήκη της εικόνας στο κουμπί
+                                        compound = "left" ) # Τοποθέτηση της εικόνας στα αριστερά του κειμένου
+
         self.btn_delete.place(relx=0.80, rely=0.8, anchor="ne")
 
+        photo_path = current_path / "photo.png"
+        photo_image = ctk.CTkImage(Image.open(photo_path), size=(35, 35))
         self.btn_uploadimg = ctk.CTkButton(master=self, text="Μεταφόρτωση φωτογραφίας", corner_radius=32, command=self.upload_img,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=15, height=40)
+                            border_width=2, width=25, height=35,
+                            image = photo_image, compound = "left" )
         self.btn_uploadimg.place(relx=0.80, rely=0.25, anchor="nw")
 
         # treeview
