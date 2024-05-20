@@ -91,21 +91,24 @@ class Graph:
             current.dob = data[id]['date_of_birth']
             current.dod = data[id]['date_of_death']
             current.photo_path = data[id]['photo_path']
-            # δημιουργία γονιών
-            parent_ids = (data[id]['mother_id'], data[id]['father_id'])
-            parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}", 
-                            f"{data[id]['father_name']} {data[id]['father_surname']}")
-            parent_genders = ('female', 'male')
-            if parent_ids[0]:
+            # δημιουργία γονιών με έλεγχο αν έχουμε single mom / single dad
+            parent_ids = (data[id]['mother_id'] if data[id]['mother_id'] else None, 
+                          data[id]['father_id'] if  data[id]['father_id'] else None)
+            parent_names = (f"{data[id]['mother_name']} {data[id]['mother_surname']}" if data[id]['mother_id'] else None, 
+                            f"{data[id]['father_name']} {data[id]['father_surname']}" if  data[id]['father_id'] else None)
+            parent_genders = ('female' if data[id]['mother_id'] else None, 
+                              'male' if  data[id]['father_id'] else None)
+            if parent_ids[0] or parent_ids[1]:
                 for parent_id, parent_name, parent_gender in zip(parent_ids, parent_names, parent_genders):
-                    if parent_id not in existing:
-                        parent = Person(parent_id, parent_name)
-                    else:
-                        parent = self.get_person(parent_id, current.all)
-                    # σύνδεση γονιού με παιδί και αντίστροφα
-                    parent.gender = parent_gender
-                    parent.children.append(current)
-                    current.parents.append(parent)
+                    if parent_id and parent_name and parent_gender:
+                        if parent_id not in existing:
+                            parent = Person(parent_id, parent_name)
+                        else:
+                            parent = self.get_person(parent_id, current.all)
+                        # σύνδεση γονιού με παιδί και αντίστροφα
+                        parent.gender = parent_gender
+                        parent.children.append(current)
+                        current.parents.append(parent)
             # ενημέρωση της existing με τα id όλων των αρχικοποιημένων Persons
             existing = [person.id for person in current.all]
 
@@ -121,9 +124,10 @@ class Graph:
                         # αν έχουν κοινούς γονείς, είναι αδέρφια
                         if self.are_siblings(person, other_person):
                             person.siblings.append(other_person)
-                # σε κάθε περίπτωση, αν υπάρχουν γονείς, τους θέτουμε συζύγους
-                person.parents[0].spouse = person.parents[1]
-                person.parents[1].spouse = person.parents[0]
+                # σε κάθε περίπτωση, αν υπάρχουν 2 γονείς, τους θέτουμε συζύγους
+                if len(person.parents) == 2:
+                    person.parents[0].spouse = person.parents[1]
+                    person.parents[1].spouse = person.parents[0]
 
         # 3o pass για την εύρεση συζύγων χωρίς παιδιά
         for id in data:
@@ -298,6 +302,15 @@ class Graph:
                         color_set += 1
                         #graph.layout(prog="dot")
                         #graph.draw(filepath)
+                    # περίπτωση single mom ή single dad
+                    if person.children and not person.spouse:
+                        person.own_union = p_nodes
+                        id = person.id
+                        point = "point" + str(p_nodes)
+                        graph.add_node(point, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
+                        graph.add_edge(id, point,  color=marriage_colors[color_set % 3])
+                        p_nodes += 1
+                        color_set += 1
                     # δημιουργία παιδιών
                     if person.parents and person not in completed_sibling_links:
                         # στοιχεία ατόμου που εξετάζεται
