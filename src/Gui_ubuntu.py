@@ -677,7 +677,10 @@ class Info_Popup(ctk.CTkToplevel):
         date_of_death = ""
         # αν υπάρχουν γονείς, τους προσθέτουμε στο string parents χωρίζοντας με κόμμα
         if current_clicked.parents:
-            parents = f"{current_clicked.parents[0].name}, {current_clicked.parents[1].name}"
+            if len(current_clicked.parents) == 2:
+                parents = f"{current_clicked.parents[0].name}, {current_clicked.parents[1].name}"
+            else:
+                parents = f"{current_clicked.parents[0].name}"
         # αν το άτομο έχει παλιότερους προγόνους, προσθέτουμε τα ονόματά τους στο string ancestors χωρισμένα με κόμμα
         if current_clicked.oldest_ancestors:
             for i, ancestor in enumerate(current_clicked.oldest_ancestors):
