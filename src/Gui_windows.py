@@ -9,8 +9,10 @@ import customtkinter as ctk
 from tkinter import ttk
 import tkinter as tk
 from tkinter import simpledialog
+from tkinter import messagebox
 import json
 import pprint
+import datetime
 
 
 
@@ -318,7 +320,6 @@ class MainApp(ctk.CTk):
 
 
     """η show_items εμφανίζει στις φόρμες τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
-    # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
         # καθάρισμα αρχικά των πεδίων
         self.clear_fields()
@@ -372,6 +373,7 @@ class MainApp(ctk.CTk):
             self.checkbox_female.select()
         else:
             self.checkbox_male.select()
+
 
     def check_and_add(self, id, name, surname, gender, spouse_id="", spouse_name="", spouse_surname="", mother_id="",
                       mother_name="", mother_surname="", father_id="", father_name="", father_surname=""):
@@ -435,7 +437,7 @@ class MainApp(ctk.CTk):
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
-        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
+        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method?
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
         # για κάθε στοιχείο που εισήγαγε ο χρήστης
