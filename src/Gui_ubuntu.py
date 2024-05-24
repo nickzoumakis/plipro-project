@@ -7,8 +7,10 @@ import customtkinter as ctk
 from tkinter import ttk
 import tkinter as tk
 from tkinter import simpledialog
+from tkinter import messagebox
 import json
-
+import pprint
+import datetime
 
 class MainApp(ctk.CTk):
     def __init__(self):
@@ -43,8 +45,11 @@ class MainApp(ctk.CTk):
         self.label_title.place(relx=0.5, rely=0.05, anchor="center")
         ctk.set_appearance_mode("light")
 
-        self.middle = tk.Frame(self, pady=10.5, highlightthickness=2, height=30, width=20)
-        self.middle.pack(side = ctk.LEFT)
+        self.middle = tk.Frame(self, pady=10.5, highlightthickness=3, height=40, width=200)
+        self.middle.pack(side=ctk.LEFT, fill='x', expand=True)  # επέκταση στο πλάτος)
+
+        self.label = tk.Label(self.middle, text="Μέλη Οικογένειας", bg='lightgray')
+        self.label.pack()
 
         # Πεδία εισαγωγής
         self.label_name= ctk.CTkLabel(master=self, text="Όνομα: ", font=("Arial", 18), text_color="black")
@@ -60,7 +65,7 @@ class MainApp(ctk.CTk):
         self.label_date= ctk.CTkLabel(master=self, text="Ημερομηνία γέννησης: ", font=("Arial", 18), text_color="black")
         self.label_date.place(relx=0.52, rely=0.1, anchor="nw")
         self.entry_date= ctk.CTkEntry(master=self, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
-        self.entry_date.place(relx=0.61, rely=0.1, anchor="nw")
+        self.entry_date.place(relx=0.64, rely=0.1, anchor="nw")
 
         self.label_id= ctk.CTkLabel(master=self, text="ID: ", font=("Arial", 18), text_color="black")
         self.label_id.place(relx=0.02, rely=0.15, anchor="nw")
@@ -70,7 +75,7 @@ class MainApp(ctk.CTk):
         self.label_death= ctk.CTkLabel(master=self, text="Ημερομηνία θανάτου: ", font=("Arial", 18), text_color="black")
         self.label_death.place(relx=0.52, rely=0.15, anchor="nw")
         self.entry_death= ctk.CTkEntry(master=self, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
-        self.entry_death.place(relx=0.61, rely=0.15, anchor="nw")
+        self.entry_death.place(relx=0.64, rely=0.15, anchor="nw")
 
         self.label_mother_name= ctk.CTkLabel(master=self, text="Όνομα Μητέρας: ", font=("Arial", 18), text_color="black")
         self.label_mother_name.place(relx=0.02, rely=0.20, anchor="nw")
@@ -102,13 +107,24 @@ class MainApp(ctk.CTk):
         self.entry_father_id= ctk.CTkEntry(master=self, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=190)
         self.entry_father_id.place(relx=0.6, rely=0.25, anchor="nw")
 
-        self.label_spouse= ctk.CTkLabel(master=self, text="ID Συζύγου: ", font=("Arial", 18), text_color="black")
-        self.label_spouse.place(relx=0.02, rely=0.30, anchor="nw")
-        self.entry_spouse= ctk.CTkEntry(master=self, placeholder_text= " ", font=("Arial", 18), text_color="black",fg_color="white",width=210)
-        self.entry_spouse.place(relx=0.11, rely=0.30, anchor="nw")
+        self.label_spouse_name = ctk.CTkLabel(master=self, text="Όνομα Συζύγου: ", font=("Arial", 18), text_color="black")
+        self.label_spouse_name.place(relx=0.02, rely=0.30, anchor="nw")
+        self.entry_spouse_name = ctk.CTkEntry(master=self, placeholder_text=" ", font=("Arial", 18), text_color="black", fg_color="white", width=206)
+        self.entry_spouse_name.place(relx=0.11, rely=0.30, anchor="nw")
 
-        self.entry_img =  ctk.CTkEntry(master=self, placeholder_text= "File path", font=("Arial", 18), text_color="black",fg_color="white",width=210)
-        self.entry_img.place(relx=0.6, rely=0.31, anchor="nw")
+        self.label_spouse_surname = ctk.CTkLabel(master=self, text="Επώνυμο Συζύγου: ", font=("Arial", 18), text_color="black")
+        self.label_spouse_surname.place(relx=0.25, rely=0.30, anchor="nw")
+        self.entry_spouse_surname = ctk.CTkEntry(master=self, placeholder_text=" ", font=("Arial", 18),text_color="black", fg_color="white", width=210)
+        self.entry_spouse_surname.place(relx=0.36, rely=0.30, anchor="nw")
+
+        self.label_spouse = ctk.CTkLabel(master=self, text="ID Συζύγου: ", font=("Arial", 18), text_color="black")
+        self.label_spouse.place(relx=0.52, rely=0.30, anchor="nw")
+        self.entry_spouse = ctk.CTkEntry(master=self, placeholder_text=" ", font=("Arial", 18), text_color="black", fg_color="white", width=210)
+        self.entry_spouse.place(relx=0.6, rely=0.30, anchor="nw")
+
+        self.entry_img =  ctk.CTkEntry(master=self, placeholder_text= "File path", font=("Arial", 18), text_color="black",fg_color="white",width=300)
+        self.entry_img.place(relx=0.8, rely=0.31, anchor="nw")
+
 
         # CHECKBOXES για φύλο
         self.checkbox_male = ctk.CTkCheckBox(master=self, text="Άντρας", font=("Arial", 12), hover=True, fg_color="grey", bg_color="Light grey", command=lambda:self.uncheck_other("male"))
@@ -118,60 +134,132 @@ class MainApp(ctk.CTk):
 
 
         # Κουμπιά αλληλεπίδρασης χρήστη, κάθε command οδηγεί σε νέο function του class
+        current_path = Path.cwd().parent / 'buttons'
+        ok_path = current_path / "ok.png"
+        ok_image = ctk.CTkImage(Image.open(ok_path), size=(30, 30))
+
         self.btn_add = ctk.CTkButton(master=self, text="Προσθήκη νέου ατόμου", corner_radius=32, command=self.add_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=4, width=20, height=50)
-        self.btn_add.place(relx=0.13, rely=0.8, anchor="ne")
+                            border_width=4, width=20, height=50,
+                            image=ok_image,  # Προσθήκη της εικόνας στο κουμπί
+                            compound="left"
+                            )
+        self.btn_add.place(relx=0.15, rely=0.8, anchor="ne")
 
-        # αλλαγή κουμπιού σε 'Δημιουργία Δέντρου' -> περνάει όλα τα άτομα από το family tree dict στο Graph 
-        self.btn_treeview = ctk.CTkButton(master=self, text="Δημιουργία Δέντρου", corner_radius=32, command=self.create_tree,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=4, width=20, height=50)
-        self.btn_treeview.place (relx=0.30, rely=0.8, anchor="ne")
+        current_path = Path.cwd().parent / 'buttons'
+        image_path = current_path / "tree_img.png"
 
-        self.btn_clear = ctk.CTkButton(master=self, text="Καθαρισμός πεδίων", corner_radius=32, command=self.clear_fields,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
-        self.btn_clear.place (relx=0.45, rely=0.8, anchor="ne")
+        # Δημιουργία της εικόνας
+        tree_image = ctk.CTkImage(Image.open(image_path), size=(30, 30))
+
+        # αλλαγή κουμπιού σε 'Δημιουργία Δέντρου' -> περνάει όλα τα άτομα από το family tree dict στο Graph
+        # Δημιουργία του κουμπιού με εικόνα
+        self.btn_treeview = ctk.CTkButton(
+            master=self,
+            text="Δημιουργία Δέντρου",
+            corner_radius=32, command=self.create_tree,
+            fg_color="light blue", hover_color="blue",
+            border_color="blue", text_color="black",
+            border_width=4, width=20, height=50,
+            image=tree_image,  # Προσθήκη της εικόνας στο κουμπί
+            compound="left"  # Τοποθέτηση της εικόνας στα αριστερά του κειμένου
+        )
+        self.btn_treeview.place (relx=0.31, rely=0.8, anchor="ne")
+
+        clear_path = current_path / "clear.png"
+        clear_image = ctk.CTkImage(Image.open(clear_path), size=(40, 40))
+        self.btn_clear = ctk.CTkButton ( master=self, text="Καθαρισμός πεδίων", corner_radius=32,
+                                        command=self.clear_fields,
+                                        fg_color="light blue", hover_color="blue",
+                                        border_color="blue",  text_color="black",
+                                        border_width=2, width=20, height=50,
+                                        image=clear_image,  # Προσθήκη της εικόνας στο κουμπί
+                                        compound="left")
+        self.btn_clear.place (relx=0.47, rely=0.8, anchor="ne")
+
+        update_path = current_path / "update.png"
+        update_image = ctk.CTkImage(Image.open(update_path), size=(40, 40))
 
         self.btn_update = ctk.CTkButton(master=self, text="Ενημέρωση στοιχείων", corner_radius=32, command=self.update_person,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
+                            border_width=2, width=20, height=50,
+                            image = update_image,
+                            compound = "left")
         self.btn_update.place(relx=0.63, rely=0.8, anchor="ne")
 
-        self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32, command=self.delete_person,
-                            fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=20, height=50)
+        can_path = current_path / "carbage can.jpg"
+        can_image = ctk.CTkImage(Image.open(can_path), size=(45, 45))
+        self.btn_delete = ctk.CTkButton(master=self, text="Διαγραφή ατόμου", corner_radius=32,
+                                        command=self.delete_person,
+                                        fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
+                                        border_width=2, width=20, height=50,
+                                        image = can_image,  # Προσθήκη της εικόνας στο κουμπί
+                                        compound = "left" ) # Τοποθέτηση της εικόνας στα αριστερά του κειμένου
+
         self.btn_delete.place(relx=0.80, rely=0.8, anchor="ne")
 
+        photo_path = current_path / "photo.png"
+        photo_image = ctk.CTkImage(Image.open(photo_path), size=(35, 35))
         self.btn_uploadimg = ctk.CTkButton(master=self, text="Μεταφόρτωση φωτογραφίας", corner_radius=32, command=self.upload_img,
                             fg_color="light blue", hover_color="blue", border_color="blue",  text_color="black",
-                            border_width=2, width=15, height=40)
-        self.btn_uploadimg.place(relx=0.45, rely=0.30, anchor="nw")
+                            border_width=2, width=25, height=35,
+                            image = photo_image, compound = "left" )
+        self.btn_uploadimg.place(relx=0.80, rely=0.25, anchor="nw")
 
         # treeview
         col_titles = (
-            "Κωδικός", 
-            "Όνομα", 
-            "Επώνυμο", 
-            "Όνομα Μητέρας", 
-            "Επώνυμο Μητέρας", 
-            "Κωδικός Μητέρας", 
-            "Όνομα Πατέρα", 
-            "Επώνυμο Πατέρα", 
-            "Κωδικός Πατέρα")
-        
+            "Κωδικός",
+            "Όνομα",
+            "Επώνυμο",
+            "Όνομα Μητέρας",
+            "Επώνυμο Μητέρας",
+            "ID Μητέρας",
+            "Όνομα Πατέρα",
+            "Επώνυμο Πατέρα",
+            "ID Πατέρα",
+            "Όνομα Συζύγου",
+            "Επώνυμο Συζύγου",
+            "ID Συζύγου")
+
         self.table = ttk.Treeview(self.middle, columns=col_titles, show='headings')
-        # Change font size of the headings
+        # Αλλαγή μεγέθους επικεφαλίδων
         self.style = ttk.Style()
-        self.style.configure("Treeview.Heading", font=("Arial", 12))
-        # Change font size of the content
-        #self.style.configure("Treeview", font=('Arial', 10), anchor=tk.CENTER)
+        self.style.configure("Treeview.Heading", font=("Arial", 13))
+        # Αλλαγή μεγέθους περιεχομένου
+        self.style.configure("Treeview", font=('Arial', 12), anchor='center')
 
         # Δημιουργία στηλών στο tree view με κεντραρισμένο το κείμενο των entries
-        for title in col_titles:
-            self.table.heading(title, text=title, anchor='center')
-            self.table.column(title, anchor='center')
+        # for title in col_titles:
+        # self.table.heading(title, text=title, anchor='center')
+        # self.table.column(title, stretch=True, anchor='center')
+        # self.table.pack(fill='both', expand=True)
+
+        self.table.heading("#1", text='Κωδικός', anchor='center', )
+        self.table.heading("#2", text='Όνομα', anchor='center')
+        self.table.heading("#3", text='Επώνυμο', anchor='center')
+        self.table.heading("#4", text="Όνομα Μητέρας", anchor='center')
+        self.table.heading("#5", text="Επώνυμο Μητέρας", anchor='center')
+        self.table.heading("#6", text="ID Μητέρας", anchor='center')
+        self.table.heading("#7", text="Όνομα Πατέρα", anchor='center')
+        self.table.heading("#8", text="Επώνυμο Πατέρα", anchor='center')
+        self.table.heading("#9", text="ID Πατέρα", anchor='center')
+        self.table.heading("#10", text='Όνομα Συζύγου', anchor='center')
+        self.table.heading("#11", text='Επώνυμο Συζύγου', anchor=tk.CENTER)
+        self.table.heading("#12", text="ID Συζύγου", anchor=tk.CENTER)
+        self.table.column("#1", anchor='center', stretch=True, width=80)
+        self.table.column("#2", anchor='center', stretch=True, width=120)
+        self.table.column("#3", anchor='center', stretch=True, width=150)
+        self.table.column("#4", anchor='center', stretch=True, width=120)
+        self.table.column("#5", anchor='center', stretch=True, width=150)
+        self.table.column("#6", anchor='center', stretch=True, width=80)
+        self.table.column("#7", anchor='center', stretch=True, width=120)
+        self.table.column("#8", anchor='center', stretch=True, width=150)
+        self.table.column("#9", anchor='center', stretch=True, width=80)
+        self.table.column("#10", anchor='center', stretch=True, width=130)
+        self.table.column("#11", anchor='center', stretch=True, width=130)
+        self.table.column("#12", anchor='center', stretch=True, width=130)
+
+        self.table.pack(fill='both', expand=True)  # το Treeview επεκτείνεται ώστε να γεμίζει το διαθέσιμο χώρο για να έχουν οι στήλες τον απαραίτητο χώρο.
         # add event: όταν ο χρήστης κάνει κλικ σε κάποιο άτομο στο treeview, τα στοιχεία του να εμφανίζονται στις φόρμες του παραθύρου        
         # η lambda εδώ είναι απαραίτητη, το bind επιστρέφει event από μόνο του ως argument, τη χρησιμοποιούμε για να το απορροφήσουμε και να καλέσουμε τη συνάρτηση που ενδιαφέρει πραγματικά(show items) 
         self.table.bind('<<TreeviewSelect>>', lambda _event:self.show_items())
@@ -180,6 +268,7 @@ class MainApp(ctk.CTk):
         # αν στο popup o χρήστης επέλεξε υπάρχον json, ενημερώνουμε το family_data και εμφανίζουμε τα στοιχεία των ατόμων στο treeview
         if not self.startup.is_new_file:
             self.load_existing(self.files['json_path'])
+
 
 
     """φορτώνει dict από το json που διάλεξε ο χρήστης και εμφανίζει τα περιεχόμενά του στο treeview"""
@@ -227,7 +316,6 @@ class MainApp(ctk.CTk):
 
 
     """η show_items εμφανίζει στις φόρμες τα στοιχεία (values) κάθε ατόμου όταν γίνεται κλικ σε αυτό στο treeview"""
-    # TODO: να μπορεί ο χρήστης να αλλάζει τα στοιχεία και πάτώντας ενημέρωση ατόμου, να ενημερώνεται το family_data dict
     def show_items(self):
         # καθάρισμα αρχικά των πεδίων
         self.clear_fields()
@@ -236,6 +324,7 @@ class MainApp(ctk.CTk):
             self.entry_surname,
             self.entry_date,
             self.entry_id,
+            self.entry_death,
             self.entry_mother_name,
             self.entry_mother_surname,
             self.entry_mother_id,
@@ -243,22 +332,26 @@ class MainApp(ctk.CTk):
             self.entry_father_surname,
             self.entry_father_id,
             self.entry_spouse,
-            self.entry_death,
+            self.entry_spouse_name,
+            self.entry_spouse_surname,
             self.entry_img]
         
         keys = ['name',
                 'surname',
                 'date_of_birth',
                 'id',
+                'date_of_death',
                 'mother_name',
                 'mother_surname',
                 'mother_id',
                 'father_name',
                 'father_surname',
                 'father_id',
-                'spouse_id', 
-                'date_of_death',
+                'spouse_id',
+                'spouse_name',
+                'spouse_surname',
                 'photo_path']
+
         # εύρεση των στοιχείων του ατόμου με βάση το id από το family_data dict και όχι από τα selected items του treeview (δεν περιλαμβάνει κενά πεδία)
         selected_item = self.table.selection()
         # διακοπή της συνάρτησης αν δεν έχει επιλεγεί άτομο ή γίνει διαγραφή του επιλεγμένου
@@ -278,9 +371,68 @@ class MainApp(ctk.CTk):
             self.checkbox_male.select()
 
 
-    """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
+    def check_and_add(self, id, name, surname, gender, spouse_id="", spouse_name="", spouse_surname="", mother_id="",
+                      mother_name="", mother_surname="", father_id="", father_name="", father_surname=""):
+        """
+        Ελέγχει αν υπάρχει το ID και αν όχι προσθέτει νέα εγγραφή για τον γονιό ή σύζυγο.
+        Ενημερώνει και τα στοιχεία του συζύγου, μητέρας και πατέρα αν υπάρχουν.
+        """
+        # Ενημερώνει τα στοιχεία του συζύγου στην εγγραφή του spouse
+        if spouse_id and spouse_id in self.family_data:
+            self.family_data[spouse_id]["spouse_id"] = id
+            self.family_data[spouse_id]["spouse_name"] = name
+            self.family_data[spouse_id]["spouse_surname"] = surname
+
+        # Ενημερώνει τα στοιχεία της μητέρας στην εγγραφή του πατέρα αν δεν είναι ο σύζυγος
+        if father_id and father_id in self.family_data:
+            self.family_data[father_id]["spouse_id"] = mother_id
+            self.family_data[father_id]["spouse_name"] = mother_name
+            self.family_data[father_id]["spouse_surname"] = mother_surname
+
+        # Ενημερώνει τα στοιχεία του πατέρα στην εγγραφή της μητέρας αν δεν είναι ο σύζυγος
+        if mother_id and mother_id in self.family_data:
+            self.family_data[mother_id]["spouse_id"] = father_id
+            self.family_data[mother_id]["spouse_name"] = father_name
+            self.family_data[mother_id]["spouse_surname"] = father_surname
+
+        if id not in self.family_data:
+            self.family_data[id] = {
+                "name": name,
+                "surname": surname,
+                "date_of_birth": "",
+                "gender": gender,
+                "date_of_death": "",
+                "mother_name": "",
+                "mother_surname": "",
+                "mother_id": "",
+                "father_name": "",
+                "father_surname": "",
+                "father_id": "",
+                "spouse_name": spouse_name,
+                "spouse_surname": spouse_surname,
+                "spouse_id": spouse_id,
+                "photo_path": ""
+            }
+
+            # Προσθέτει τον γονιό ή σύζυγο στο treeview-gui table
+            self.table.insert('', 'end', values=(
+                id,
+                name,
+                surname,
+                mother_name,
+                mother_surname,
+                mother_id,
+                father_name,
+                father_surname,
+                father_id,
+                spouse_name,
+                spouse_surname,
+                spouse_id
+            ))
+
+
     def add_person(self):
-        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
+        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method?
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
         # για κάθε στοιχείο που εισήγαγε ο χρήστης
@@ -296,9 +448,97 @@ class MainApp(ctk.CTk):
         father_surname = self.entry_father_surname.get()
         father_id = self.entry_father_id.get()
         spouse_id = self.entry_spouse.get()
+        spouse_name = self.entry_spouse_name.get()
+        spouse_surname = self.entry_spouse_surname.get()
         photo_path = self.entry_img.get()
 
-        # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph
+        # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
+        for entry in [id, mother_id, father_id, spouse_id]:
+            if entry:
+                try:
+                    int(entry)
+                except ValueError:
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
+                    return
+                
+        # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
+        if name or surname or id:
+            if not name.isalpha():
+                if not surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο με χαρακτήρες")
+                    return
+            if id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id")
+                return
+            elif id in self.family_data:
+                messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
+                return
+        else:
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο")
+            return
+        
+        if mother_name or mother_surname or mother_id:
+            if not mother_name.isalpha():
+                if not mother_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
+                    return
+            if mother_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
+                return
+            
+        if father_name or father_surname or father_id:
+            if not father_name.isalpha():
+                if not father_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
+                    return
+            if father_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
+                return
+            
+        # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
+        if spouse_name or spouse_surname or spouse_id:
+            if not spouse_name.isalpha():
+                if not spouse_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
+                    return
+            if spouse_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
+                return
+            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
+                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
+                return
+
+        if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
+            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
+            return
+
+        date = self.entry_date.get()
+
+        if not date == "":
+            try:
+                birth = datetime.datetime.strptime(date, '%Y/%m/%d')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία!")
+                return
+
+        death = self.entry_death.get()
+
+        if not death == "":
+            try:
+                dd = datetime.datetime.strptime(death, '%Y/%m/%d')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
+                return
+
         # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
             "name": name,
@@ -313,27 +553,42 @@ class MainApp(ctk.CTk):
             "father_surname": father_surname,
             "father_id": father_id,
             "spouse_id": spouse_id,
+            "spouse_name" : spouse_name,
+            "spouse_surname" : spouse_surname,
             "photo_path": photo_path
         }
 
-        # για debugging
-        #print(self.family_data)
-
         # Προσθέτει το νέο άτομο στο treeview-gui table
         self.table.insert('', 'end', values=(
-            id, 
-            name, 
-            surname, 
-            mother_name, 
-            mother_surname, 
+            id,
+            name,
+            surname,
+            mother_name,
+            mother_surname,
             mother_id,
             father_name,
-            father_surname, 
-            father_id)
-            ) 
-        
+            father_surname,
+            father_id,
+            spouse_name,
+            spouse_surname,
+            spouse_id)
+                              )
+        # Έλεγχος και προσθήκη γονιών ή συζύγου αν δεν υπάρχουν
+        if mother_id:
+            self.check_and_add(mother_id, mother_name, mother_surname, 'female', spouse_id=father_id,
+                               spouse_name=father_name, spouse_surname=father_surname)
+        if father_id:
+            self.check_and_add(father_id, father_name, father_surname, 'male', spouse_id=mother_id,
+                               spouse_name=mother_name,  spouse_surname=mother_surname)
+        if spouse_id:
+            self.check_and_add(spouse_id, spouse_name, spouse_surname, '', id, name, surname)
+
+        # για debugging
+        #pprint.pprint(self.family_data)
         # Καθάρισμα των πεδίων για το επόμενο άτομο
         self.clear_fields()
+        self.save()
+
         
 
     """clear_fields: Καθαρίζει όλα τα πεδία"""
@@ -342,6 +597,7 @@ class MainApp(ctk.CTk):
                     self.entry_surname,
                     self.entry_date,
                     self.entry_id,
+                    self.entry_death,
                     self.entry_mother_name,
                     self.entry_mother_surname,
                     self.entry_mother_id,
@@ -349,13 +605,24 @@ class MainApp(ctk.CTk):
                     self.entry_father_surname,
                     self.entry_father_id,
                     self.entry_spouse,
-                    self.entry_death,
+                    self.entry_spouse_name,
+                    self.entry_spouse_surname,
                     self.entry_img]:
             entry.delete(0, 'end')
         
         # Ξετσεκάρει τα checkboxes
         for checkbox in [self.checkbox_male, self.checkbox_female]:
             checkbox.deselect()
+
+
+    def save(self):
+        json_filepath = self.files['json_path']
+        try:
+            with open(json_filepath, "w") as file:
+                json.dump(self.family_data, file, indent=4)
+
+        except Exception as e:
+            print("¨Πρόβλημα στην αποθήκευση του αρχείου", e)
 
 
     def update_person(self):
@@ -374,6 +641,8 @@ class MainApp(ctk.CTk):
         father_name = self.entry_father_name.get()
         father_surname = self.entry_father_surname.get()
         father_id = self.entry_father_id.get()
+        spouse_name = self.entry_spouse_name.get()
+        spouse_surname = self.entry_spouse_surname.get()
         spouse_id = self.entry_spouse.get()
         photo_path = self.entry_img.get()
 
@@ -392,26 +661,34 @@ class MainApp(ctk.CTk):
                 "father_surname": father_surname,
                 "father_id": father_id,
                 "spouse_id": spouse_id,
+                "spouse_name": spouse_name,
+                "spouse_surname": spouse_surname,
                 "photo_path": photo_path
             }
+            self.save()
         except KeyError:
             print("Invalid ID")
             return
 
+
         # Ενημέρωση του Treeview
         selected_item = self.table.selection()[0]
         self.table.item(selected_item, values=(
-                        person_id, 
-                        name, 
-                        surname, 
-                        mother_name, 
-                        mother_surname, 
-                        mother_id,
-                        father_name,
-                        father_surname, 
-                        father_id)
-            ) 
-        
+            person_id,
+            name,
+            surname,
+            mother_name,
+            mother_surname,
+            mother_id,
+            father_name,
+            father_surname,
+            father_id,
+            spouse_name,
+            spouse_surname,
+            spouse_id))
+        #self.save()
+
+
     """διαγράφει άτομο από το treeview και από το family_data"""
     def delete_person(self):
         selected_item = self.table.selection()  # Get the selected item
@@ -424,6 +701,7 @@ class MainApp(ctk.CTk):
         self.table.delete(selected_item)  # Διαγράφω από το Treeview
 
         del self.family_data[str(item_id)]  # Αφαίρεση από το family_data
+        self.save()
         #debug print
         #print(self.family_data)
 
@@ -711,13 +989,9 @@ class Info_Popup(ctk.CTkToplevel):
             label_dod = ctk.CTkLabel(self, text="Ημερομηνία Θανάτου: " + date_of_death, font=("Arial", fontsize))
             label_dod.pack()
         # κουμπί κλεισίματος παραθύρου
-        close_button = ctk.CTkButton(self, text="Κλείσιμο", command=lambda:self.kill_info_popup(master))
+        close_button = ctk.CTkButton(self, text="Κλείσιμο", command=self.destroy)
         close_button.pack()
     
-    def kill_info_popup(self, master):
-        master.attributes("-topmost", True)
-        self.destroy()
-
 
 
 

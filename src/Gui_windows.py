@@ -544,8 +544,6 @@ class MainApp(ctk.CTk):
                 messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
                 return
 
-        
-        # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph
         # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
             "name": name,
