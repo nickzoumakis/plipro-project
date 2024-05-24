@@ -281,80 +281,83 @@ class MainApp(ctk.CTk):
     """add_person: Προσθέτει τα στοιχεία του 
     ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
-        try:
-
-        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
         # λήψη του μοναδικού κωδικού του ατόμου
-            id = int(self.entry_id.get())
-            # για κάθε στοιχείο που εισήγαγε ο χρήστης
-            name = self.entry_name.get()
-            surname = self.entry_surname.get()
-            dob = self.entry_date.get()
-            gender = self.checkbox_male.get()
-            dod = self.entry_death.get()
-            mother_name = self.entry_mother_name.get()
-            mother_surname = self.entry_mother_surname.get()
-            mother_id = int(self.entry_mother_id.get())
-            father_name = self.entry_father_name.get()
-            father_surname = self.entry_father_surname.get()
-            father_id = int(self.entry_father_id.get())
-            spouse_id = self.entry_spouse.get()
-            photo_path = self.entry_img.get()
-        except ValueError:
-            messagebox.showinfo(title="info",
-                                message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί"
-                                        "\nΤα υπόλοιπα πεδία με χαρακτήρες")
-            return
+        id = self.entry_id.get()
+        # για κάθε στοιχείο που εισήγαγε ο χρήστης
+        name = self.entry_name.get()
+        surname = self.entry_surname.get()
+        dob = self.entry_date.get()
+        gender = self.checkbox_male.get()
+        dod = self.entry_death.get()
+        mother_name = self.entry_mother_name.get()
+        mother_surname = self.entry_mother_surname.get()
+        mother_id = self.entry_mother_id.get()
+        father_name = self.entry_father_name.get()
+        father_surname = self.entry_father_surname.get()
+        father_id = self.entry_father_id.get()
+        spouse_id = self.entry_spouse.get()
+        spouse_name = self.entry_spouse_name.get()
+        spouse_surname = self.entry_spouse_surname.get()
+        photo_path = self.entry_img.get()
 
-        if not name.isalpha() or not surname.isalpha():
-            messagebox.showinfo(title="info",
-                                message="Παρακαλώ συμπληρώστε τα πεδία : Όνομα και Επώνυμο με χαρακτήρες")
-            return
+        # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
+        for entry in [id, mother_id, father_id]:
+            if entry:
+                try:
+                    int(entry)
+                except ValueError:
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί"
+                                                "\nΤα υπόλοιπα πεδία με χαρακτήρες")
+                    return
 
-        if not mother_name.isalpha() or not mother_surname.isalpha():
-            messagebox.showinfo(title="info",
-                                message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                        "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
-            return
+        if not name.isalpha():
+            if not surname.isalpha():
+                messagebox.showinfo(title="info",
+                                    message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                            "Όνομα και Επώνυμο με χαρακτήρες")
+                return
 
-        if not father_name.isalpha() or not father_surname.isalpha():
-            messagebox.showinfo(title="info",
-                                message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                        "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
-            return
+        if not mother_name.isalpha():
+            if not mother_surname.isalpha():
+                messagebox.showinfo(title="info",
+                                    message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                            "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
+                return
 
-
-
-
-
+        if not father_name.isalpha():
+            if not father_surname.isalpha():
+                messagebox.showinfo(title="info",
+                                    message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                            "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
+                return
 
 
         # Έλεγχοι ID, όνομα, επώνυμο
-        if self.entry_name.get() == "" or self.entry_surname.get() == "":
-            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα και επώνυμο")
+        if self.entry_name.get() == "" and self.entry_surname.get() == "":
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο")
             return
         if self.entry_id.get() == "":
             messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id")
             return
         if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
-            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλλο")
+            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
             return
 
-        if self.entry_mother_name.get() == "" or self.entry_mother_surname.get() == "":
-            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα και επώνυμο Μητέρας")
+        if self.entry_mother_name.get() == "" and self.entry_mother_surname.get() == "":
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο Μητέρας")
             return
         if self.entry_mother_id.get() == "":
             messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
             return
 
-        if self.entry_father_name.get() == "" or self.entry_father_surname.get() == "":
-            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα και επώνυμο Πατέρα")
+        if self.entry_father_name.get() == "" and self.entry_father_surname.get() == "":
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο Πατέρα")
             return
         if self.entry_father_id.get() == "":
             messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
             return
 
-        id = self.entry_id.get()
         if id in self.family_data:
             messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
             return
@@ -365,7 +368,7 @@ class MainApp(ctk.CTk):
             try:
                 birth = datetime.datetime.strptime(date, '%Y/%m/%d')
             except ValueError:
-                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερονομηνία!")
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία!")
                 return
 
         death = self.entry_death.get()
@@ -374,12 +377,12 @@ class MainApp(ctk.CTk):
             try:
                 dd = datetime.datetime.strptime(death, '%Y/%m/%d')
             except ValueError:
-                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερονομηνία θανάτου!")
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
                 return
 
         
 
-                # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph
+        
         # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
             "name": name,
@@ -446,7 +449,6 @@ class MainApp(ctk.CTk):
     def update_person(self):
         # Παίρνω το ID του ατόμου που θα ενημερώσω και όλα τα στοιχεία απο τις φόρμες
         #print(type(self.entry_id.get()))
-        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method
         person_id = self.entry_id.get()
         name = self.entry_name.get()
         surname = self.entry_surname.get()

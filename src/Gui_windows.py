@@ -457,6 +457,94 @@ class MainApp(ctk.CTk):
         spouse_surname = self.entry_spouse_surname.get()
         photo_path = self.entry_img.get()
 
+        # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
+        for entry in [id, mother_id, father_id, spouse_id]:
+            if entry:
+                try:
+                    int(entry)
+                except ValueError:
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
+                    return
+                
+        # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
+        if name or surname or id:
+            if not name.isalpha():
+                if not surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο με χαρακτήρες")
+                    return
+            if id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id")
+                return
+            elif id in self.family_data:
+                messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
+                return
+        else:
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο")
+            return
+        
+        if mother_name or mother_surname or mother_id:
+            if not mother_name.isalpha():
+                if not mother_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
+                    return
+            if mother_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
+                return
+            
+        if father_name or father_surname or father_id:
+            if not father_name.isalpha():
+                if not father_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
+                    return
+            if father_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
+                return
+            
+        # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
+        if spouse_name or spouse_surname or spouse_id:
+            if not spouse_name.isalpha():
+                if not spouse_surname.isalpha():
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
+                    return
+            if spouse_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
+                return
+            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
+                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
+                return
+
+        if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
+            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
+            return
+
+        date = self.entry_date.get()
+
+        if not date == "":
+            try:
+                birth = datetime.datetime.strptime(date, '%Y/%m/%d')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία!")
+                return
+
+        death = self.entry_death.get()
+
+        if not death == "":
+            try:
+                dd = datetime.datetime.strptime(death, '%Y/%m/%d')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
+                return
+
+        
         # TODO: αμυντικός για μοναδικότητα ID κάθε ατόμου, έγκυρους χαρακτήρες γενικά στα πεδία, να μη μπορεί να εισαχθεί κενό entry στο dict αλλιώς έχω nonetype στο Person list του Graph
         # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
