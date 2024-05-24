@@ -458,7 +458,8 @@ class MainApp(ctk.CTk):
         photo_path = self.entry_img.get()
 
         # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
-        for entry in [id, mother_id, father_id, spouse_id]:
+        all_ids = [id, mother_id, father_id, spouse_id]
+        for entry in all_ids:
             if entry:
                 try:
                     int(entry)
@@ -466,7 +467,14 @@ class MainApp(ctk.CTk):
                     messagebox.showinfo(title="info",
                                         message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
                     return
-                
+        # έλεγχος αν υπάρχουν διπλότυπα στις φόρμες
+        for _id in all_ids:
+            if _id:
+                for other_id in all_ids[all_ids.index(_id) + 1:]: 
+                    if other_id and other_id == _id: 
+                        messagebox.showinfo(title="ERROR",
+                                                    message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nΒρέθηκαν διπλότυπα id.")
+                        return        
         # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
         if name or surname or id:
             if not name.isalpha():
