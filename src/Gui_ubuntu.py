@@ -430,7 +430,7 @@ class MainApp(ctk.CTk):
                 spouse_id
             ))
 
-
+    """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
         #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method?
         # λήψη του μοναδικού κωδικού του ατόμου
@@ -472,52 +472,56 @@ class MainApp(ctk.CTk):
                         return        
         # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
         if name or surname or id:
-            if not name.isalpha():
-                if not surname.isalpha():
-                    messagebox.showinfo(title="info",
-                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                "Όνομα και Επώνυμο με χαρακτήρες")
-                    return
+            for entry in [name, surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                    "Όνομα και Επώνυμο με χαρακτήρες")
+                        return
             if id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id")
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο ID")
                 return
             elif id in self.family_data:
                 messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
                 return
         else:
-            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο")
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο και ID")
             return
         
         if mother_name or mother_surname or mother_id:
-            if not mother_name.isalpha():
-                if not mother_surname.isalpha():
-                    messagebox.showinfo(title="info",
-                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
-                    return
+            for entry in [mother_name, mother_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                    "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
+                        return
             if mother_id == "":
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
                 return
             
         if father_name or father_surname or father_id:
-            if not father_name.isalpha():
-                if not father_surname.isalpha():
-                    messagebox.showinfo(title="info",
-                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
-                    return
+            for entry in [father_name, father_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                    "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
+                        return
             if father_id == "":
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
                 return
             
         # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
         if spouse_name or spouse_surname or spouse_id:
-            if not spouse_name.isalpha():
-                if not spouse_surname.isalpha():
-                    messagebox.showinfo(title="info",
-                                        message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
-                    return
+            for entry in [spouse_name, spouse_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
+                                                    "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
+                        return
             if spouse_id == "":
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
                 return
@@ -592,7 +596,7 @@ class MainApp(ctk.CTk):
             self.check_and_add(spouse_id, spouse_name, spouse_surname, '', id, name, surname)
 
         # για debugging
-        #pprint.pprint(self.family_data)
+        pprint.pprint(self.family_data)
         # Καθάρισμα των πεδίων για το επόμενο άτομο
         self.clear_fields()
         self.save()
@@ -654,6 +658,16 @@ class MainApp(ctk.CTk):
         spouse_id = self.entry_spouse.get()
         photo_path = self.entry_img.get()
 
+         # Έλεγχος και προσθήκη γονιών ή συζύγου αν δεν υπάρχουν
+        if mother_id:
+            self.check_and_add(mother_id, mother_name, mother_surname, 'female', spouse_id=father_id,
+                               spouse_name=father_name, spouse_surname=father_surname)
+        if father_id:
+            self.check_and_add(father_id, father_name, father_surname, 'male', spouse_id=mother_id,
+                               spouse_name=mother_name, spouse_surname=mother_surname)
+        if spouse_id:
+            self.check_and_add(spouse_id, spouse_name, spouse_surname, '', person_id, name, surname)
+            
         # Ενημέρωση των keys του family_data dict για το συγκεκριμένο id
         try:
             self.family_data[person_id] = {
