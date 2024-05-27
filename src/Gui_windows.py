@@ -805,12 +805,6 @@ class MainApp(ctk.CTk):
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
                 return True
             
-            # TODO: έλεγχος λανθασμένου (μη υπάρχοντος) ζεύγους id γονιών
-            """if not update:
-                pass
-                if mother_id in self.family_data:
-                    messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
-                    return True"""
             # διαφορετικά, δεν επιτρέπω στο χρήστη να αλλάξει id τοποθετημένου ατόμου
             if update and mother_id_change:
                 messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
@@ -828,17 +822,38 @@ class MainApp(ctk.CTk):
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
                 return True
             
-            # TODO: έλεγχος λανθασμένου ζεύγους id γονιών
-            """if not update:
-                pass
-                if mother_id in self.family_data:
-                    messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
-                    return True"""
             # διαφορετικά, δεν επιτρέπω στο χρήστη να αλλάξει id τοποθετημένου ατόμου
             if update and father_id_change:
                 messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
                 return True
-            
+        
+        # έλεγχος έγκυρου (υπάρχοντος ή νέου) ζεύγους id γονιών
+        if father_id and mother_id:
+            # λήψη όλων των υπάρχοντων ζευγαριών id γονιών ως τώρα
+            existing = [(self.family_data[id]['mother_id'], self.family_data[id]['father_id']) for id in self.family_data]
+            # boolean μεταβλητές για αποδοχή
+            accept = False
+            reverse = False
+            wrong_id = False
+            for momid, dadid in existing:
+                # περίπτωση 1: το ζεύγος γονιών ταυτίζεται με υπάρχον - αποδοχή
+                if momid == mother_id and dadid == father_id:
+                    accept = True
+                    break
+                # περίπτωση 2: το ζεύγος έχει ανεστραμμένο 1 ή και τα 2 id - μη αποδοχή
+                elif momid == father_id or dadid == mother_id:
+                    reverse = True
+                    break
+                # περίπτωση 3: το ζεύγος έχει έχει ένα σωστό id και ένα που δεν υπάρχει - μη αποδοχή
+                else:
+                    if (dadid == father_id and momid != mother_id) or (momid == mother_id and dadid != father_id):
+                        wrong_id = True
+                        break
+            # εμφάνιση error για μη αποδοχή και αντιστροφή id, διαφορετικά αποδοχή ως νέο ζεύγος (νέο άτομο με 2 νέους γονείς) ή υπάρχον (αδερφός υπάρχοντος ατόμου)
+            if (not accept and reverse) or (not accept and wrong_id):
+                messagebox.showerror(title='ERROR', message="Λανθασμένο ζευγάρι ID γονιών.")
+                return True
+
         # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
         if spouse_name or spouse_surname or spouse_id:
             for entry in [spouse_name, spouse_surname]:
@@ -876,6 +891,7 @@ class MainApp(ctk.CTk):
             except ValueError:
                 messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
                 return True
+        # αν περάσει όλους τους ελέγχους, επιστροφή False
         return False
 
     # επαναφέρει σε None μετά από κάθε προσθήκη ατόμου/ενημέρωση στοιχείων/διαγραφή
