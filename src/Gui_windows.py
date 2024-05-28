@@ -517,7 +517,7 @@ class MainApp(ctk.CTk):
             self.check_and_add(spouse_id, spouse_name, spouse_surname, '', id, name, surname)
 
         # για debugging
-        pprint.pprint(self.family_data)
+        #pprint.pprint(self.family_data)
         # Καθάρισμα των πεδίων για το επόμενο άτομο
         self.clear_fields()
         # ενημέρωση του json
