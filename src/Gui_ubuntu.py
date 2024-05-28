@@ -36,8 +36,12 @@ class MainApp(ctk.CTk):
         self.coordinates = {}
         # κενή αρχικά λίστα με όλα τα Person objects που θα δημιουργηθούν από το Tree class
         self.all = []
-        # κενή αρχικά μεταβλητή για το photo object, για αποτροπή του garbage collection και διαγραφή του
-        self.pic = None
+
+        # μεταβλητές για αμυντικό προγραμματισμό, παρακολουθούν τα παλιά id σε περίπτωση αλλαγών από το χρήστη
+        # αποκτούν τιμές όταν επιλέγεται άτομο από το treeview
+        # χρησιμοποιούνται από την error_check
+        # γίνονται reset σε None μετά από κάθε προσθήκη ατόμου/ενημέρωση στοιχείων/διαγραφή
+        (self.old_id, self.old_mother_id, self.old_father_id, self.old_spouse_id) = (None, None, None, None)
 
         # Στοιχεία και γεωμετρία main παραθύρου
         self.geometry("1500x900")
@@ -358,6 +362,14 @@ class MainApp(ctk.CTk):
         if not selected_item:
             return
         selected_id = str(self.table.item(selected_item)['values'][0])
+
+        # εκχώρηση του τωρινού id ατόμου και γονιών/συζύγου στις old_id για παρακολούθηση αλλαγών από το χρήστη
+        self.old_id = selected_id
+        self.old_mother_id = self.family_data[selected_id]['mother_id']
+        self.old_father_id = self.family_data[selected_id]['father_id']
+        self.old_spouse_id = self.family_data[selected_id]['spouse_id']
+
+        # πληθωρισμός του treeview με τα στοιχεία του επιλεγμένου ατόμου
         for entry, key in zip(entries, keys):
             if  entry == self.entry_id:
                 # 3o στοιχείο το ID του ατομου, το παίρνουμε κατευθείαν από το selected_id αφού στο dict δεν υπάρχει μέσα στα keys
@@ -452,106 +464,11 @@ class MainApp(ctk.CTk):
         spouse_surname = self.entry_spouse_surname.get()
         photo_path = self.entry_img.get()
 
-        # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
-        all_ids = [id, mother_id, father_id, spouse_id]
-        for entry in all_ids:
-            if entry:
-                try:
-                    int(entry)
-                except ValueError:
-                    messagebox.showinfo(title="info",
-                                        message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
-                    return
-        # έλεγχος αν υπάρχουν διπλότυπα στις φόρμες
-        for _id in all_ids:
-            if _id:
-                for other_id in all_ids[all_ids.index(_id) + 1:]: 
-                    if other_id and other_id == _id: 
-                        messagebox.showinfo(title="ERROR",
-                                                    message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nΒρέθηκαν διπλότυπα id.")
-                        return        
-        # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
-        if name or surname or id:
-            for entry in [name, surname]:
-                if entry:
-                    if not entry.isalpha() :
-                        messagebox.showinfo(title="info",
-                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                    "Όνομα και Επώνυμο με χαρακτήρες")
-                        return
-            if id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο ID")
-                return
-            elif id in self.family_data:
-                messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
-                return
-        else:
-            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο και ID")
+        # εκτέλεση της error_check για εύρεση λαθών και διακοπή συνέχειας αν επιστρέψει True
+        if self.error_check():
             return
-        
-        if mother_name or mother_surname or mother_id:
-            for entry in [mother_name, mother_surname]:
-                if entry:
-                    if not entry.isalpha() :
-                        messagebox.showinfo(title="info",
-                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                    "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
-                        return
-            if mother_id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
-                return
-            
-        if father_name or father_surname or father_id:
-            for entry in [father_name, father_surname]:
-                if entry:
-                    if not entry.isalpha() :
-                        messagebox.showinfo(title="info",
-                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                    "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
-                        return
-            if father_id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
-                return
-            
-        # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
-        if spouse_name or spouse_surname or spouse_id:
-            for entry in [spouse_name, spouse_surname]:
-                if entry:
-                    if not entry.isalpha() :
-                        messagebox.showinfo(title="info",
-                                            message="Παρακαλώ συμπληρώστε τα πεδία :"
-                                                    "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
-                        return
-            if spouse_id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
-                return
-            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
-                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
-                return
+        # αν η error_check επιστρέψει false, τα δεδομένα μπορούν να προστεθούν στο family_data
 
-        if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
-            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
-            return
-
-        date = self.entry_date.get()
-
-        if not date == "":
-            try:
-                birth = datetime.datetime.strptime(date, '%Y/%m/%d')
-            except ValueError:
-                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία!")
-                return
-
-        death = self.entry_death.get()
-
-        if not death == "":
-            try:
-                dd = datetime.datetime.strptime(death, '%Y/%m/%d')
-            except ValueError:
-                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
-                return
-
-        # προσθήκη στο λεξικό family_data
         self.family_data[id] = {
             "name": name,
             "surname": surname,
@@ -596,12 +513,15 @@ class MainApp(ctk.CTk):
             self.check_and_add(spouse_id, spouse_name, spouse_surname, '', id, name, surname)
 
         # για debugging
-        pprint.pprint(self.family_data)
+        #pprint.pprint(self.family_data)
         # Καθάρισμα των πεδίων για το επόμενο άτομο
         self.clear_fields()
+        # ενημέρωση του json
         self.save()
+        # επαναφορά id change flags σε None
+        self.reset_id_change_flags()
 
-        
+
 
     """clear_fields: Καθαρίζει όλα τα πεδία"""
     def clear_fields(self):
@@ -626,6 +546,8 @@ class MainApp(ctk.CTk):
         for checkbox in [self.checkbox_male, self.checkbox_female]:
             checkbox.deselect()
 
+        # επαναφορά id change flags σε None
+        self.reset_id_change_flags()
 
     def save(self):
         json_filepath = self.files['json_path']
@@ -658,6 +580,12 @@ class MainApp(ctk.CTk):
         spouse_id = self.entry_spouse.get()
         photo_path = self.entry_img.get()
 
+        # έλεγχος με την error_check ώστε να μη μπορεί ο χρήστης να κάνει update με λανθασμένα στοιχεία
+        if self.error_check(update=True):
+            self.reset_id_change_flags()
+            self.clear_fields()
+            return
+        
          # Έλεγχος και προσθήκη γονιών ή συζύγου αν δεν υπάρχουν
         if mother_id:
             self.check_and_add(mother_id, mother_name, mother_surname, 'female', spouse_id=father_id,
@@ -667,31 +595,28 @@ class MainApp(ctk.CTk):
                                spouse_name=mother_name, spouse_surname=mother_surname)
         if spouse_id:
             self.check_and_add(spouse_id, spouse_name, spouse_surname, '', person_id, name, surname)
-            
-        # Ενημέρωση των keys του family_data dict για το συγκεκριμένο id
-        try:
-            self.family_data[person_id] = {
-                "name": name,
-                "surname": surname,
-                "date_of_birth": dob,
-                "gender" : 'male' if gender == 1 else 'female',
-                "date_of_death": dod,
-                "mother_name": mother_name,
-                "mother_surname": mother_surname,
-                "mother_id": mother_id,
-                "father_name": father_name,
-                "father_surname": father_surname,
-                "father_id": father_id,
-                "spouse_id": spouse_id,
-                "spouse_name": spouse_name,
-                "spouse_surname": spouse_surname,
-                "photo_path": photo_path
-            }
-            self.save()
-        except KeyError:
-            print("Invalid ID")
-            return
 
+        # Ενημέρωση των keys του family_data dict για το συγκεκριμένο id
+        self.family_data[person_id] = {
+            "name": name,
+            "surname": surname,
+            "date_of_birth": dob,
+            "gender" : 'male' if gender == 1 else 'female',
+            "date_of_death": dod,
+            "mother_name": mother_name,
+            "mother_surname": mother_surname,
+            "mother_id": mother_id,
+            "father_name": father_name,
+            "father_surname": father_surname,
+            "father_id": father_id,
+            "spouse_id": spouse_id,
+            "spouse_name": spouse_name,
+            "spouse_surname": spouse_surname,
+            "photo_path": photo_path
+        }
+        self.save()
+        # επαναφορά id change flags σε None
+        self.reset_id_change_flags()
 
         # Ενημέρωση του Treeview
         selected_item = self.table.selection()[0]
@@ -709,7 +634,7 @@ class MainApp(ctk.CTk):
             spouse_surname,
             spouse_id))
         #self.save()
-
+        
 
     """διαγράφει άτομο από το treeview και από το family_data"""
     def delete_person(self):
@@ -724,6 +649,8 @@ class MainApp(ctk.CTk):
 
         del self.family_data[str(item_id)]  # Αφαίρεση από το family_data
         self.save()
+        # επαναφορά id change flags σε None
+        self.reset_id_change_flags()
         #debug print
         #print(self.family_data)
 
@@ -778,6 +705,195 @@ class MainApp(ctk.CTk):
         else:
             print("No file chosen.")
             return
+
+    # αμυντικός προγραμματισμός με εμφάνιση ενημερωτικού popup και επιστροφή True, αλλιώς False
+    def error_check(self, update=False):
+        # λήψη του μοναδικού κωδικού του ατόμου
+        id = self.entry_id.get()
+        # για κάθε στοιχείο που εισήγαγε ο χρήστης
+        name = self.entry_name.get()
+        surname = self.entry_surname.get()
+        dob = self.entry_date.get()
+        dod = self.entry_death.get()
+        mother_name = self.entry_mother_name.get()
+        mother_surname = self.entry_mother_surname.get()
+        mother_id = self.entry_mother_id.get()
+        father_name = self.entry_father_name.get()
+        father_surname = self.entry_father_surname.get()
+        father_id = self.entry_father_id.get()
+        spouse_id = self.entry_spouse.get()
+        spouse_name = self.entry_spouse_name.get()
+        spouse_surname = self.entry_spouse_surname.get()
+        
+        # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
+        all_ids = [id, mother_id, father_id, spouse_id]
+        for entry in all_ids:
+            if entry:
+                try:
+                    int(entry)
+                except ValueError:
+                    messagebox.showinfo(title="info",
+                                        message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
+                    return True
+        # έλεγχος αν υπάρχουν διπλότυπα στις φόρμες
+        for _id in all_ids:
+            if _id:
+                for other_id in all_ids[all_ids.index(_id) + 1:]: 
+                    if other_id and other_id == _id: 
+                        messagebox.showinfo(title="ERROR",
+                                                    message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nΒρέθηκαν διπλότυπα id.")
+                        return True      
+                    
+        # αν η συνάρτηση κλήθηκε με την παράμετρο update, έχει πατηθεί ενημέρωση στοιχείων
+        if update:
+            # boolean παράμετροι που ελέγχουν αν ο χρήστης έχει αλλάξει το id ατόμου ή/και γονιών/συζύγου
+            (id_change, mother_id_change, father_id_change, spouse_id_change) = (False, False, False, False)
+            # αν ο χρήστης έχει κάνει κλικ σε υπάρχον άτομο, συγκρίνω και τα παλιά id με τα καινούρια και ενεργοποιώ τα boolean για παρακολούθηση
+            if self.old_id and self.old_id != id:
+                id_change = True
+            if self.old_father_id and self.old_father_id != father_id:
+                father_id_change = True
+            if self.old_mother_id and self.old_mother_id != mother_id:
+                mother_id_change = True
+            if self.old_spouse_id and self.old_spouse_id != spouse_id:
+                spouse_id_change = True
+
+        # Έλεγχοι ID, όνομα, επώνυμο για άτομο / γονείς
+        # αν υπάρχει τουλάχιστον ένα από id, name, surname, προχωράμε σε ελέγχους εγκυρότητας
+        if name or surname or id:
+            for entry in [name, surname]:
+                if entry:
+                    # αλφαβητικός έλεγχος name/surname
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
+                                                    "Όνομα και Επώνυμο με χαρακτήρες")
+                        return True
+            # έλεγχος ανυπαρξίας id
+            if id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο ID")
+                return True
+            # αν πατήθηκε προσθήκη νέου ατόμου, αρκεί να ελέγξω για διπλότυπα ID 
+            if not update:
+                if id in self.family_data:
+                    messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
+                    return True
+            # διαφορετικά, δεν επιτρέπω στο χρήστη να αλλάξει id τοποθετημένου ατόμου
+            elif id_change:
+                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
+                return True
+            
+        # διαφορετικά, τα πεδία είναι ελλειπή
+        else:
+            messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο και ID")
+            return True
+        
+        # ίδιοι έλεγχοι για γονείς
+        if mother_name or mother_surname or mother_id:
+            for entry in [mother_name, mother_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
+                                                    "Όνομα και Επώνυμο Μητέρας με χαρακτήρες")
+                        return True
+            if mother_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id της Μητέρας")
+                return True
+            
+            # διαφορετικά, δεν επιτρέπω στο χρήστη να αλλάξει id τοποθετημένου ατόμου
+            if update and mother_id_change:
+                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
+                return True
+            
+        if father_name or father_surname or father_id:
+            for entry in [father_name, father_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
+                                                    "Όνομα και Επώνυμο Πατέρα με χαρακτήρες")
+                        return True
+            if father_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id του Πατέρα")
+                return True
+            
+            # διαφορετικά, δεν επιτρέπω στο χρήστη να αλλάξει id τοποθετημένου ατόμου
+            if update and father_id_change:
+                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
+                return True
+        
+        # έλεγχος έγκυρου (υπάρχοντος ή νέου) ζεύγους id γονιών
+        if father_id and mother_id:
+            # λήψη όλων των υπάρχοντων ζευγαριών id γονιών ως τώρα
+            existing = [(self.family_data[id]['mother_id'], self.family_data[id]['father_id']) for id in self.family_data]
+            # boolean μεταβλητές για αποδοχή
+            accept = False
+            reverse = False
+            wrong_id = False
+            for momid, dadid in existing:
+                # περίπτωση 1: το ζεύγος γονιών ταυτίζεται με υπάρχον - αποδοχή
+                if momid == mother_id and dadid == father_id:
+                    accept = True
+                    break
+                # περίπτωση 2: το ζεύγος έχει ανεστραμμένο 1 ή και τα 2 id - μη αποδοχή
+                elif momid == father_id or dadid == mother_id:
+                    reverse = True
+                    break
+                # περίπτωση 3: το ζεύγος έχει έχει ένα σωστό id και ένα που δεν υπάρχει - μη αποδοχή
+                else:
+                    if (dadid == father_id and momid != mother_id) or (momid == mother_id and dadid != father_id):
+                        wrong_id = True
+                        break
+            # εμφάνιση error για μη αποδοχή και αντιστροφή id, διαφορετικά αποδοχή ως νέο ζεύγος (νέο άτομο με 2 νέους γονείς) ή υπάρχον (αδερφός υπάρχοντος ατόμου)
+            if (not accept and reverse) or (not accept and wrong_id):
+                messagebox.showerror(title='ERROR', message="Λανθασμένο ζευγάρι ID γονιών.")
+                return True
+
+        # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
+        if spouse_name or spouse_surname or spouse_id:
+            for entry in [spouse_name, spouse_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
+                                                    "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
+                        return True
+            if spouse_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
+                return True
+            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
+                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
+                return True
+            if update and spouse_id_change:
+                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
+                return True
+            
+        if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
+            messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
+            return True
+
+
+        if not dob == "":
+            try:
+                birth = datetime.datetime.strptime(dob, '%d/%m/%Y')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία γέννησης!")
+                return True
+
+        if not dod == "":
+            try:
+                dd = datetime.datetime.strptime(dod, '%d/%m/%Y')
+            except ValueError:
+                messagebox.showinfo(title='info', message="Παρακαλώ εισάγετε σωστά την ημερομηνία θανάτου!")
+                return True
+        # αν περάσει όλους τους ελέγχους, επιστροφή False
+        return False
+
+    # επαναφέρει σε None μετά από κάθε προσθήκη ατόμου/ενημέρωση στοιχείων/διαγραφή
+    def reset_id_change_flags(self):
+        (self.old_id, self.old_mother_id, self.old_father_id, self.old_spouse_id) = (None, None, None, None)
+    
 
 
 """Κλάση Popup: Υλοποιεί το εισαγωγικό παράθυρο επιλογής υπάρχοντος json ή δημηιουργίας νέου.ge
