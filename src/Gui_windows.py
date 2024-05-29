@@ -792,7 +792,7 @@ class MainApp(ctk.CTk):
             messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο και ID")
             return True
         
-        # ίδιοι έλεγχοι για γονείς
+        # ίδιοι έλεγχοι για γονείς και σύζυγο
         if mother_name or mother_surname or mother_id:
             for entry in [mother_name, mother_surname]:
                 if entry:
@@ -826,6 +826,26 @@ class MainApp(ctk.CTk):
             if update and father_id_change:
                 messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
                 return True
+            
+        if spouse_name or spouse_surname or spouse_id:
+            for entry in [spouse_name, spouse_surname]:
+                if entry:
+                    if not entry.isalpha() :
+                        messagebox.showinfo(title="info",
+                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
+                                                    "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
+                        return True
+            if spouse_id == "":
+                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
+                return True
+            # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id του έχει ήδη συσχετισθεί με άλλο άτομο
+            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
+                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
+                return True
+            if update and spouse_id_change:
+                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
+                return True
+            
         
         # έλεγχος έγκυρου (υπάρχοντος ή νέου) ζεύγους id γονιών
         if father_id and mother_id:
@@ -854,25 +874,6 @@ class MainApp(ctk.CTk):
                 messagebox.showerror(title='ERROR', message="Λανθασμένο ζευγάρι ID γονιών.")
                 return True
 
-        # αν έχει δοθεί σύζυγος, ελέγχουμε και αν το id έχει ήδη συσχετισθεί με άλλο άτομο
-        if spouse_name or spouse_surname or spouse_id:
-            for entry in [spouse_name, spouse_surname]:
-                if entry:
-                    if not entry.isalpha() :
-                        messagebox.showinfo(title="info",
-                                            message="Παρακαλώ συμπληρώστε τουλάχιστον ένα από τα πεδία:\n"
-                                                    "Όνομα και Επώνυμο Συζύγου με χαρακτήρες")
-                        return True
-            if spouse_id == "":
-                messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο id Συζύγου")
-                return True
-            elif spouse_id in self.family_data and self.family_data[spouse_id]["spouse_id"] != id:
-                messagebox.showerror(title='ERROR', message="Το id Συζύγου είναι ήδη δεσμευμένο.")
-                return True
-            if update and spouse_id_change:
-                messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
-                return True
-            
         if self.checkbox_male.get() == 0 and self.checkbox_female.get() == 0:
             messagebox.showerror(title='ERROR', message="Παρακαλώ επιλέξτε φύλο")
             return True
@@ -894,7 +895,8 @@ class MainApp(ctk.CTk):
         # αν περάσει όλους τους ελέγχους, επιστροφή False
         return False
 
-    # επαναφέρει σε None μετά από κάθε προσθήκη ατόμου/ενημέρωση στοιχείων/διαγραφή
+
+    # επαναφέρει σε None τις boolean παρακολούθησης αλλαγών id μετά από κάθε προσθήκη ατόμου/ενημέρωση στοιχείων/διαγραφή
     def reset_id_change_flags(self):
         (self.old_id, self.old_mother_id, self.old_father_id, self.old_spouse_id) = (None, None, None, None)
     
