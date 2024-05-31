@@ -1,7 +1,6 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
-from PygraphvizTree import Person, Graph
+from PygraphvizTree import Graph
 from pathlib import Path
-import pygraphviz as pgv
 from PIL import Image, ImageOps, ImageTk
 import customtkinter as ctk
 from tkinter import ttk
