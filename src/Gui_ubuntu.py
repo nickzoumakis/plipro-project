@@ -708,9 +708,8 @@ class MainApp(ctk.CTk):
 
     # αμυντικός προγραμματισμός με εμφάνιση ενημερωτικού popup και επιστροφή True, αλλιώς False
     def error_check(self, update=False):
-        # λήψη του μοναδικού κωδικού του ατόμου
+        # λήψη όλων των στοιχείων από τις φόρμες
         id = self.entry_id.get()
-        # για κάθε στοιχείο που εισήγαγε ο χρήστης
         name = self.entry_name.get()
         surname = self.entry_surname.get()
         dob = self.entry_date.get()
@@ -728,13 +727,13 @@ class MainApp(ctk.CTk):
         # έλεγχος αν τα id, εφόσον εισήχθησαν είναι ακέραιοι
         all_ids = [id, mother_id, father_id, spouse_id]
         for entry in all_ids:
+            # ο έλεγχος γίνεται μόνο αν έχει εισαχθεί τιμή
             if entry:
-                try:
-                    int(entry)
-                except ValueError:
+                if not entry.isdigit():
                     messagebox.showinfo(title="info",
                                         message="Παρακαλώ εισάγετε σωστές τιμές στα πεδία\nτα id: ακέραιοι αριθμοί")
                     return True
+            
         # έλεγχος αν υπάρχουν διπλότυπα στις φόρμες
         for _id in all_ids:
             if _id:
@@ -773,7 +772,7 @@ class MainApp(ctk.CTk):
             if id == "":
                 messagebox.showerror(title='ERROR', message="Παρακαλώ συμπληρώστε το πεδίο ID")
                 return True
-            # αν πατήθηκε προσθήκη νέου ατόμου, αρκεί να ελέγξω για διπλότυπα ID 
+            # αν πατήθηκε προσθήκη νέου ατόμου, αρκεί να ελέγξω για διπλότυπα ID στο family_data
             if not update:
                 if id in self.family_data:
                     messagebox.showinfo(title='Ιnfo', message="Το ΙD υπάρχει ήδη.")
@@ -783,7 +782,7 @@ class MainApp(ctk.CTk):
                 messagebox.showinfo(title='Ιnfo', message="Δεν επιτρέπεται η αλλαγή ID τοποθετημένου ατόμου.")
                 return True
             
-        # διαφορετικά, τα πεδία είναι ελλειπή
+        # διαφορετικά, τα πεδία είναι ελλειπή - δεν επιτρέπεται να προστεθεί κενό entry 
         else:
             messagebox.showinfo(title='Info', message="Παρακαλώ συμπληρώστε όνομα ή επώνυμο και ID")
             return True
@@ -845,12 +844,15 @@ class MainApp(ctk.CTk):
         
         # έλεγχος έγκυρου (υπάρχοντος ή νέου) ζεύγους id γονιών
         if father_id and mother_id:
-            # λήψη όλων των υπάρχοντων ζευγαριών id γονιών ως τώρα
-            existing = [(self.family_data[id]['mother_id'], self.family_data[id]['father_id']) for id in self.family_data]
+            # λήψη όλων των υπάρχοντων ζευγαριών id γονιών ως τώρα ως tuples στη λίστα existing
+            existing = []
+            for i in self.family_data:
+                existing.append((self.family_data[i]['mother_id'], self.family_data[i]['father_id']))
             # boolean μεταβλητές για αποδοχή
             accept = False
             reverse = False
             wrong_id = False
+            # συγκρίνω τα υπάρχοντα ζεύγη id γονιών του existing(momid, dadid) με αυτά που έχει εισάγει ο χρήστης στις φόρμες (mother_id, father_id)
             for momid, dadid in existing:
                 # περίπτωση 1: το ζεύγος γονιών ταυτίζεται με υπάρχον - αποδοχή
                 if momid == mother_id and dadid == father_id:
