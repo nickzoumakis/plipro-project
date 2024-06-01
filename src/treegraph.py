@@ -67,8 +67,6 @@ class Graph:
                 print("===============")
         print("====END====")"""
                 
-        # ταξινόμηση ανα γενιά
-        self.sorted_all = self.all_people
 
     """Φορτώνει το αρχείο json ή το dict με τις πληροφορίες συγγένειας από το χρήστη, φτιάχνει τα Person objects και επιστρέφει τη λίστα για τη σχεδίαση"""
     def load_data(self, family_data):
@@ -242,7 +240,7 @@ class Graph:
         # κλήση draw με τη sorted_all λίστα
         filename = filename + '.png'
         _filepath = Path.cwd().parent / 'graph' / filename
-        self.draw(graph, self.sorted_all, self.max_depth, _filepath)
+        self.draw(graph, self.all_people, self.max_depth, _filepath)
         graph.layout(prog="dot")
 
 
@@ -277,9 +275,7 @@ class Graph:
                         person.spouse.own_union = p_nodes
                         # λήψη στοιχείων
                         id = person.id
-                        name = person.name
                         spouse_id = person.spouse.id
-                        spouse_name = person.spouse.name
                         # δημιουργία κόμβων και ακμών ένωσης γονιών
                         point = "point" + str(p_nodes)
                         link_left = "link" + str(id)
@@ -314,7 +310,6 @@ class Graph:
                     if person.parents and person not in completed_sibling_links:
                         # στοιχεία ατόμου που εξετάζεται
                         id = person.id
-                        name = person.name
                         # εύρεση σημείου ένωσης γονιών του
                         parent_union = "point" + str(person.parents[0].own_union)
                         # εύρεση χρώματος σύνδεσης γονιών
