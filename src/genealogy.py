@@ -1,7 +1,7 @@
 """Αντικειμενοστραφής υλοποίηση για το interface"""
 """Windows version"""
 
-from PygraphvizTree import Graph
+from treegraph import Graph
 from pathlib import Path
 from PIL import Image, ImageOps, ImageTk
 import customtkinter as ctk
@@ -447,7 +447,6 @@ class MainApp(ctk.CTk):
 
     """add_person: Προσθέτει τα στοιχεία του ατόμου στον πίνακα του παραθύρου και ενημερώνει το dict"""
     def add_person(self):
-        #TODO: Συμμέζεμα του κώδικα, υπάρχουν άλλα 2 methods που καλούν τη get για τα ίδια δεδομένα - να μπει σε ξεχωριστό method?
         # λήψη του μοναδικού κωδικού του ατόμου
         id = self.entry_id.get()
         # για κάθε στοιχείο που εισήγαγε ο χρήστης
