@@ -256,7 +256,7 @@ class Graph:
         current_gen = 0
         node_fill = ["cadetblue1", "lightpink"]
         # 2 χρώματα για κάθε γάμο
-        marriage_colors = ["red", "blue", "chartreuse4"]
+        marriage_colors = ["red", "blue", "purple"]
         for person in people:
             graph.add_node(person.id, label=f"{person.name}", style="filled", fillcolor=node_fill[0] if person.gender=="male" else node_fill[1])
         # για κάθε γενιά
