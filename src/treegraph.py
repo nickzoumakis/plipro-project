@@ -281,6 +281,31 @@ class Graph:
                         link_left = "link" + str(id)
                         link_right = "link" + str(spouse_id)
                         # κόμβοι
+                        
+                        # αλλαγή χρώματος σύνδεσης αν τύχει να είναι το ίδιο με το επιλεγμένο από τη λίστα (μόνο αν έχει ήδη κάποια ακμή κάποιος ή και οι 2 σύζυγοι)
+                        if person.parents:
+                            (person_parents_color, spouse_parents_color) = (None, None)
+                            # εύρεση σημείου ένωσης γονιών του
+                            person_parent_union = "point" + str(person.parents[0].own_union)
+                            # εύρεση χρώματος σύνδεσης γονιών
+                            for edge_tuple in graph.edges(person_parent_union):
+                                person_parents_color = graph.get_edge(*edge_tuple).attr['color']
+                            # αλλαγή του χρώματος της νέα σύνδεσης αν ταυτίζεται
+                            if person_parents_color == marriage_colors[color_set % 3]:
+                                color_set += 1
+                            # εύρεση χρώματος σύνδεσης γονιών και για τη σύζυγο, αν υπάρχει
+                            if person.spouse.parents:
+                                spouse_parent_union = "point" + str(person.spouse.parents[0].own_union)
+                                for edge_tuple in graph.edges(spouse_parent_union):
+                                    spouse_parents_color = graph.get_edge(*edge_tuple).attr['color']
+                                if spouse_parents_color == marriage_colors[color_set % 3]:
+                                    color_set += 1
+
+                            # αν και οι δύο σύζυγοι έχουν χρωματική σύνδεση, αλλάζω το χρώμα της μεταξύ τους ώστε να μην ταυτίζεται με κανένα από τα 2 προηγούμενα
+                            if person_parents_color and spouse_parents_color:
+                                while marriage_colors[color_set % 3] == person_parents_color or marriage_colors[color_set % 3] == spouse_parents_color:
+                                    color_set += 1
+
                         graph.add_node(point, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
                         graph.add_node(link_left, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
                         graph.add_node(link_right, label="", height=0.05, width=0.05, style="filled", fillcolor=marriage_colors[color_set % 3], color=marriage_colors[color_set % 3])
@@ -414,11 +439,14 @@ class Graph:
                     x_curr =  float(graph.get_node(current).attr['pos'].split(',')[0])
                     # αν η ανίσωση ισχύει, υπάρχει διασταύρωση των ακμών και γίνεται αντιστροφή τους
                     if  abs(x_curr - x_link_curr) > abs(x_curr - x_link_curr_spouse):
-                        # διαγραφή υπάρχουσας ένωσης
-                        graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
-                        # προσθήκη σωστών ενώσεων
-                        graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
-                        graph.layout(prog="dot")
+                        try:
+                            # διαγραφή υπάρχουσας ένωσης
+                            graph.remove_edges_from([(current, current_link), (current_spouse, current_spouse_link)])
+                            # προσθήκη σωστών ενώσεων
+                            graph.add_edges_from([(current, current_spouse_link), (current_spouse, current_link)], color=color)
+                            graph.layout(prog="dot")
+                        except KeyError:
+                            continue
         elif center:
             for person in people:
             # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
@@ -474,9 +502,12 @@ class Graph:
                         closest_sib_x = float(graph.get_node(sib_nodes[0]['id']).attr['pos'].split(',')[0])
                         # αν η απόσταση από τον τωρινά συνδεδεμένο κόμβο sib είναι μεγαλύτερη από την απόσταση του πιο κοντινού sib, έχει γίνει διασταύρωση
                         if abs(curr_sib_link_x - current_x) > abs(closest_sib_x - current_x):
-                            graph.remove_edge(curr_sib_link, current)
-                            graph.add_edge(sib_nodes[0]['id'], current, color=color)
-                            graph.layout(prog="dot")
+                            try:
+                                graph.remove_edge(curr_sib_link, current)
+                                graph.add_edge(sib_nodes[0]['id'], current, color=color)
+                                graph.layout(prog="dot")
+                            except KeyError:
+                                continue
 
 
     """καλείται μετά την optimize_edges για διαγραφή ορφανών συνδέσεων και κόμβων sib/link"""
