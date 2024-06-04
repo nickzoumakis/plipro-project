@@ -631,6 +631,9 @@ class MainApp(ctk.CTk):
             spouse_surname,
             spouse_id))
         #self.save()
+
+        # καθάρισμα των πεδίων από τις φόρμες
+        self.clear_fields()
         
 
     """διαγράφει άτομο από το treeview και από το family_data"""
@@ -650,6 +653,9 @@ class MainApp(ctk.CTk):
         self.reset_id_change_flags()
         #debug print
         #print(self.family_data)
+
+        # καθάρισμα των πεδίων από τις φόρμες
+        self.clear_fields()
 
 
     """create_tree: Αποθήκευση γενεαλογικών δεδομένων στο δίσκο. 
@@ -859,9 +865,9 @@ class MainApp(ctk.CTk):
                 elif momid == father_id or dadid == mother_id:
                     reverse = True
                     break
-                # περίπτωση 3: το ζεύγος έχει έχει ένα σωστό id και ένα που δεν υπάρχει - μη αποδοχή
+                # περίπτωση 3: το ζεύγος έχει έχει ένα σωστό id - αποδοχή μόνο αν το άλλο δεν υπήρχε (υπήρχε ένας γονιός και προστέθηκε 2ος)
                 else:
-                    if (dadid == father_id and momid != mother_id) or (momid == mother_id and dadid != father_id):
+                    if (dadid == father_id and momid and momid != mother_id) or (momid == mother_id and dadid and dadid != father_id):
                         wrong_id = True
                         break
             # εμφάνιση error για μη αποδοχή και αντιστροφή id, διαφορετικά αποδοχή ως νέο ζεύγος (νέο άτομο με 2 νέους γονείς) ή υπάρχον (αδερφός υπάρχοντος ατόμου)
