@@ -451,9 +451,12 @@ class Graph:
             for person in people:
             # για κάθε σχεδιασμένο κόμβο συζύγων, λήψη συντεταγμένων κέντρου και σημείων ένωσης με αγκύλη
                 if person.spouse:
-                    current = graph.get_node(person.id)
-                    current_spouse = graph.get_node(person.spouse.id)
-                    current_point = graph.get_node("point" + str(person.own_union))
+                    try:
+                        current = graph.get_node(person.id)
+                        current_spouse = graph.get_node(person.spouse.id)
+                        current_point = graph.get_node("point" + str(person.own_union))
+                    except KeyError:
+                        continue
                     # εύρεση link κόμβου
                     for node in (current, current_spouse):
                         for edge_tuple in graph.edges(node):
@@ -476,7 +479,10 @@ class Graph:
             for person in people:
                 if person.siblings:
                     # συντεταγμένη Χ κόμβου ατόμου
-                    current = graph.get_node(person.id)
+                    try:
+                        current = graph.get_node(person.id)
+                    except KeyError:
+                        continue
                     current_x = float(graph.get_node(current).attr['pos'].split(',')[0])
                     # εύρεση και λήψη του κόμβου sib (αγκύλη αδερφιών) που είναι τώρα ενωμένο το άτομο
                     for edge_tuple in graph.edges(current):
